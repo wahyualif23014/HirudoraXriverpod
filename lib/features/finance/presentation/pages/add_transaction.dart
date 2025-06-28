@@ -8,17 +8,17 @@ import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
 import '../../../../app/themes/app_theme.dart'; // Menggunakan text_styles
 
-import '../../domain/entity/budget_entity.dart'; // Impor BudgetEntity
+import '../../../finance/domain/entity/budget_entity.dart'; // Impor BudgetEntity
 import '../../data/providers/finance_providers.dart'; // Impor finance_providers
 
-class BudgetPage extends ConsumerStatefulWidget {
-  const BudgetPage({super.key});
+class AddTransaction extends ConsumerStatefulWidget {
+  const AddTransaction({super.key});
 
   @override
-  ConsumerState<BudgetPage> createState() => _BudgetPageState();
+  ConsumerState<AddTransaction> createState() => _BudgetPageState();
 }
 
-class _BudgetPageState extends ConsumerState<BudgetPage> {
+class _BudgetPageState extends ConsumerState<AddTransaction> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _limitController = TextEditingController();
@@ -165,7 +165,7 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
       id: _editingBudget?.id, // Pertahankan ID jika sedang mengedit
       category: _categoryController.text,
       limit: double.parse(_limitController.text),
-      spent: _editingBudget?.spent ?? 0.0, 
+      spent: _editingBudget?.spent ?? 0.0, // Pertahankan spent jika sedang mengedit
     );
 
     if (_editingBudget == null) {
@@ -175,28 +175,33 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     }
 
     if (mounted) {
-      if (budgetNotifier.state is AsyncData) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _editingBudget == null ? 'Anggaran berhasil ditambahkan!' : 'Anggaran berhasil diperbarui!',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText),
+      final budgetActionState = ref.read(budgetNotifierProvider);
+      budgetActionState.when(
+        data: (_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _editingBudget == null ? 'Anggaran berhasil ditambahkan!' : 'Anggaran berhasil diperbarui!',
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText),
+              ),
+              backgroundColor: AppColors.accentGreen,
             ),
-            backgroundColor: AppColors.accentGreen,
-          ),
-        );
-        Navigator.pop(context);
-      } else if (budgetNotifier.state is AsyncError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Gagal menyimpan anggaran: ${(budgetNotifier.state as AsyncError).error}',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText),
+          );
+          Navigator.pop(context);
+        },
+        loading: () {},
+        error: (error, stack) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Gagal menyimpan anggaran: $error',
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText),
+              ),
+              backgroundColor: AppColors.error,
             ),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+          );
+        },
+      );
     }
   }
 
@@ -221,9 +226,9 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
           ElevatedButton(
             onPressed: () async {
               final budgetNotifier = ref.read(budgetNotifierProvider.notifier);
-              await budgetNotifier.deleteBudget(id);
-              if (mounted) {
-                if (budgetNotifier.state is AsyncData) {
+              try {
+                await budgetNotifier.deleteBudget(id);
+                if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Anggaran berhasil dihapus!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
@@ -231,10 +236,12 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                     ),
                   );
                   Navigator.pop(context); // Tutup dialog
-                } else if (budgetNotifier.state is AsyncError) {
+                }
+              } catch (error) {
+                if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Gagal menghapus anggaran: ${(budgetNotifier.state as AsyncError).error}', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
+                      content: Text('Gagal menghapus anggaran: $error', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
                       backgroundColor: AppColors.error,
                     ),
                   );

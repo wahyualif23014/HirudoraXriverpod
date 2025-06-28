@@ -1,7 +1,6 @@
 // lib/app/theme/app_theme.dart
 import 'package:flutter/material.dart';
 import '../themes/colors.dart'; // Impor warna baru Anda
-import '../themes/app_theme.dart'; // Asumsi sudah ada, jika belum buat saja file kosong dulu
 
 class AppTheme {
   static ThemeData lightTheme = ThemeData(
