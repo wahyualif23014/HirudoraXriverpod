@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/app_scaffold.dart'; 
 import '../../../../core/widgets/glass_container.dart'; 
 import '../../../../app/themes/colors.dart'; 
-import '../../../../app/routes/routes.dart'; // Rute aplikasi Anda
+import '../../../../app/routes/routes.dart'; 
 
 final totalBalanceProvider = StateProvider<double>((ref) => 1250000.0); // Contoh saldo
 final recentActivityProvider = StateProvider<String>((ref) => '2 new activities logged today');
