@@ -1,4 +1,4 @@
-package com.example.hirudorax
+package Hirudora.tm
 
 import io.flutter.embedding.android.FlutterActivity
 

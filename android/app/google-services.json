@@ -1,22 +1,22 @@
 {
   "project_info": {
-    "project_number": "523600901086",
-    "firebase_url": "https://hexagontm-7062a-default-rtdb.firebaseio.com",
-    "project_id": "hexagontm-7062a",
-    "storage_bucket": "hexagontm-7062a.firebasestorage.app"
+    "project_number": "388605479107",
+    "firebase_url": "https://hirudoraxriver-default-rtdb.firebaseio.com",
+    "project_id": "hirudoraxriver",
+    "storage_bucket": "hirudoraxriver.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:523600901086:android:33685a8b65be0a2cfd234f",
+        "mobilesdk_app_id": "1:388605479107:android:a4e55bf161be18689a7a76",
         "android_client_info": {
-          "package_name": "timemater.hexa"
+          "package_name": "Hirudora.tm"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDF8zpOC46WCJ3OZaHS4xYJppz_iNt-pPk"
+          "current_key": "AIzaSyAsxyMvjP5NWUdiMG0n0eFqLS8BO3stkoM"
         }
       ],
       "services": {
