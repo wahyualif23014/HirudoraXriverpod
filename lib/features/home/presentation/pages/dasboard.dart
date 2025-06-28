@@ -8,7 +8,6 @@ import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart'; // Warna tema Anda
 import '../../../../app/routes/routes.dart'; // Rute aplikasi Anda
 
-// Nanti ini akan diganti dengan provider yang mengambil data dari fitur Finance, Activities, dll.
 final totalBalanceProvider = StateProvider<double>((ref) => 1250000.0); // Contoh saldo
 final recentActivityProvider = StateProvider<String>((ref) => '2 new activities logged today');
 final nextHabitProvider = StateProvider<String>((ref) => 'Workout - 30 mins');
