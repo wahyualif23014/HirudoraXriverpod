@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "523600901086",
+    "firebase_url": "https://hexagontm-7062a-default-rtdb.firebaseio.com",
+    "project_id": "hexagontm-7062a",
+    "storage_bucket": "hexagontm-7062a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523600901086:android:33685a8b65be0a2cfd234f",
+        "android_client_info": {
+          "package_name": "timemater.hexa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDF8zpOC46WCJ3OZaHS4xYJppz_iNt-pPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
