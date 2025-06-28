@@ -1,26 +1,36 @@
+// lib/app/routes/routes.dart
+
 
 class AppRoutes {
+  // // --- Authentication Routes ---
+  // static const String signInPath = '/sign-in';
+  // static const String signUpPath = '/sign-up';
 
-  // Main App Routes
-  static const String homePath = '/'; // Dashboard/Home Page
-  static const String dashboardPath = '/home';
+  // --- Main Application Routes ---
+  static const String homePath = '/'; 
 
-  // Finance Routes
-  static const String financeOverviewPath = '/finance-overview';
-  static const String addTransactionPath = '/add-transaction';
-  static const String budgetManagementPath = '/budget-management';
-  static const String financialGoalsPath = '/financial-goals';
+  // --- Finance Feature Routes ---
+  static const String financeHubPath = '/finance'; 
+  static const String addTransactionPath = '/finance/add-transaction';
+  static const String budgetManagementPath = '/finance/budgets';
+  static const String financialGoalsPath = '/finance/goals'; 
 
-  // Activities Routes
-  static const String activitiesPath = '/activities';
-  static const String addActivityPath = '/add-activity';
-  static String activityDetailPath(String id) => '/activities/$id'; // Contoh rute dinamis
+  // --- Activities Feature Routes ---
+  static const String activitiesHubPath = '/activities'; 
+  static const String addActivityPath = '/activities/add'; 
+  static String activityDetailPath(String id) => '/activities/$id'; 
 
-  // Personal Development Routes (Jika ada fitur yang terpisah dari habits/goals)
-  static const String personalDevPath = '/personal-dev';
+  // --- Habits Feature Routes (Bagian dari Pengembangan Diri) ---
+  static const String habitsHubPath = '/habits'; 
+  static const String addHabitPath = '/habits/add'; 
+  static String habitDetailPath(String id) => '/habits/$id';
 
-  // Settings Routes
+  // --- Goals Feature Routes (Bagian dari Pengembangan Diri) ---
+  static const String goalsHubPath = '/goals'; 
+  static const String addGoalPath = '/goals/add'; 
+  static String goalDetailPath(String id) => '/goals/$id';
+
+  // --- Settings Feature Routes ---
   static const String settingsPath = '/settings';
-  static const String notificationSettingsPath = '/notification-settings';
-
+  static const String notificationSettingsPath = '/settings/notifications';
 }
