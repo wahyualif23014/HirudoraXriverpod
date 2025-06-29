@@ -1,7 +1,7 @@
 // lib/features/finance/presentation/pages/finance_overview_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_slidable/flutter_slidable.dart'; // Impor Slidable
+import 'package:flutter_slidable/flutter_slidable.dart'; 
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -11,7 +11,7 @@ import '../../../../app/themes/app_theme.dart';
 import '../../../../app/routes/routes.dart';
 
 import '../../domain/entity/transaction_entity.dart';
-import '../../domain/entity/budget_entity.dart'; // Penting untuk _TransactionListItem
+import '../../domain/entity/budget_entity.dart'; 
 import '../../data/providers/finance_providers.dart';
 
 
@@ -21,16 +21,13 @@ class FinanceOverviewPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final DateTime currentMonth = DateTime.now();
-    // Menggunakan transactionsStreamProvider untuk mendapatkan stream transaksi
     final transactionsAsyncValue = ref.watch(transactionsStreamProvider);
-    // Menggunakan totalBalanceSupabaseProvider untuk mendapatkan total saldo
     final totalBalanceAsyncValue = ref.watch(totalBalanceSupabaseProvider);
 
     Future<void> _refreshData() async {
-      // Invalidate providers untuk memicu refresh data dari sumber
       ref.invalidate(transactionsStreamProvider);
       ref.invalidate(monthlyFinanceSummaryProvider(currentMonth));
-      ref.invalidate(totalBalanceSupabaseProvider); // Invalidasi juga total balance
+      ref.invalidate(totalBalanceSupabaseProvider);
     }
 
     return AppScaffold(
@@ -57,12 +54,11 @@ class FinanceOverviewPage extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 1. Header Halaman dan Saldo Total
           const SizedBox(height: 60),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Align(
-              alignment: Alignment.centerLeft,
+              alignment: Alignment.center,
               child: Text(
                 'Keuangan saya',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryText),
@@ -70,7 +66,6 @@ class FinanceOverviewPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          // Menampilkan Total Saldo di sini
           totalBalanceAsyncValue.when(
             data: (totalBalance) {
               final balanceColor = totalBalance >= 0 ? AppColors.accentGreen : AppColors.error;
@@ -94,7 +89,7 @@ class FinanceOverviewPage extends ConsumerWidget {
                 ),
               );
             },
-            loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
+            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
             error: (error, stack) => Text('Gagal memuat saldo', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error)),
           ),
           const SizedBox(height: 32),
@@ -159,7 +154,7 @@ class FinanceOverviewPage extends ConsumerWidget {
                     );
                   }
 
-                  final latestTransactions = List<TransactionEntity>.from(transactions) // Buat salinan list agar sort tidak mengubah list asli yang diwatch
+                  final latestTransactions = List<TransactionEntity>.from(transactions) 
                       ..sort((a, b) => b.date.compareTo(a.date));
 
                   return ListView.builder(
@@ -171,8 +166,6 @@ class FinanceOverviewPage extends ConsumerWidget {
                       return _TransactionListItem(
                         transaction: transaction,
                         onEdit: () {
-                          // Navigasi ke halaman AddTransactionPage untuk edit
-                          // Menggunakan context.push dengan `extra` untuk mengirim objek
                           context.push(AppRoutes.addTransactionPath, extra: transaction);
                         },
                         onDelete: () async {
@@ -182,7 +175,7 @@ class FinanceOverviewPage extends ConsumerWidget {
                               try {
                                 await notifier.deleteTransaction(
                                   transaction.id,
-                                  transaction.budgetId ?? '', // Berikan string kosong jika null
+                                  transaction.budgetId ?? '', 
                                   transaction.amount,
                                   transaction.type,
                                 );
@@ -229,7 +222,7 @@ class FinanceOverviewPage extends ConsumerWidget {
             icon: Icons.add_circle_rounded,
             label: 'Tambah',
             color: AppColors.accentBlue,
-            onTap: () => context.go(AppRoutes.addTransactionPath), // Navigasi ke AddTransactionPage
+            onTap: () => context.go(AppRoutes.addTransactionPath), 
           ),
           const SizedBox(width: 12),
           _buildActionChip(
@@ -255,7 +248,7 @@ class FinanceOverviewPage extends ConsumerWidget {
   // Helper untuk Action Chip (UI Baru)
   Widget _buildActionChip(BuildContext context, {required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
     return AspectRatio(
-      aspectRatio: 1, // Membuat chip menjadi persegi
+      aspectRatio: 1, 
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
@@ -297,7 +290,7 @@ class FinanceOverviewPage extends ConsumerWidget {
               backgroundColor: AppColors.error,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
             ),
-            child: const Text('Hapus', style: TextStyle(color: AppColors.primaryText)),
+            child: const Text('', style: TextStyle(color: AppColors.primaryText)),
           ),
         ],
       ),
@@ -322,9 +315,6 @@ class _TransactionListItem extends ConsumerWidget {
     final bool isExpense = transaction.type == 'expense';
     final Color amountColor = isExpense ? AppColors.error : AppColors.accentGreen;
     final IconData iconData = isExpense ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;
-
-    // Dapatkan budget secara langsung. Ini akan null jika budgetId kosong,
-    // atau jika budget tidak ditemukan/sedang loading/error.
     final BudgetEntity? budget = (transaction.budgetId != null && transaction.budgetId!.isNotEmpty)
         ? ref.watch(budgetByIdProvider(transaction.budgetId!))
         : null;
@@ -335,11 +325,11 @@ class _TransactionListItem extends ConsumerWidget {
         motion: const StretchMotion(),
         children: [
           SlidableAction(
-            onPressed: (_) => onEdit(), // Panggil onEdit saat tombol edit ditekan
+            onPressed: (_) => onEdit(), 
             backgroundColor: AppColors.accentBlue,
             foregroundColor: Colors.white,
             icon: Icons.edit_rounded,
-            label: 'Edit',
+            label: '',
             borderRadius: BorderRadius.circular(15),
           ),
           SlidableAction(
@@ -347,7 +337,7 @@ class _TransactionListItem extends ConsumerWidget {
             backgroundColor: AppColors.error,
             foregroundColor: Colors.white,
             icon: Icons.delete_rounded,
-            label: 'Hapus',
+            label: '',
             borderRadius: BorderRadius.circular(15),
           ),
         ],
@@ -395,7 +385,7 @@ class _TransactionListItem extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   Text(
-                    DateFormat('dd MMM करू').format(transaction.date),
+                    DateFormat('dd MMM yyyy').format(transaction.date),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.tertiaryText),
                   ),
                   if (budget != null)
