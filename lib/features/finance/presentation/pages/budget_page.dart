@@ -64,7 +64,6 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
-            // Padding bawah disesuaikan dengan tinggi keyboard
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
           child: GlassContainer(
