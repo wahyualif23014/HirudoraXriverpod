@@ -42,10 +42,15 @@ class FinanceRepositoryImpl implements FinanceRepository {
     return budgetModel?.toEntity(); 
   }
 
+@override
+  Future<void> addTransaction(TransactionEntity transaction) async {
+    await remoteDataSource.addTransaction(TransactionModel.fromEntity(transaction));
 
-  @override
-  Future<void> addTransaction(TransactionEntity transaction) {
-    return remoteDataSource.addTransaction(TransactionModel.fromEntity(transaction));
+    // Logika update budget spent untuk addTransaction sekarang di repository
+    if (transaction.budgetId != null && transaction.budgetId!.isNotEmpty) {
+      double amountChange = transaction.type == 'expense' ? transaction.amount : -transaction.amount;
+      await remoteDataSource.updateBudgetSpent(transaction.budgetId!, amountChange);
+    }
   }
 
   @override
@@ -56,34 +61,36 @@ class FinanceRepositoryImpl implements FinanceRepository {
     }
     final oldTransaction = oldTransactionModel.toEntity();
 
-
     await remoteDataSource.updateTransaction(TransactionModel.fromEntity(transaction));
 
-    if (oldTransaction.budgetId.isNotEmpty) {
+    // --- Logika Penyesuaian Budget Saat Update Transaksi ---
+    if (oldTransaction.budgetId != null && oldTransaction.budgetId!.isNotEmpty) {
+      // Kasus 1: budgetId berubah
       if (oldTransaction.budgetId != transaction.budgetId) {
-        double oldAmountChange = oldTransaction.type == 'expense' ? -oldTransaction.amount : oldTransaction.amount; // Membatalkan efek
-        await remoteDataSource.updateBudgetSpent(oldTransaction.budgetId, oldAmountChange);
+        // Batalkan efek transaksi lama pada budget lama
+        double oldAmountChange = oldTransaction.type == 'expense' ? -oldTransaction.amount : oldTransaction.amount;
+        await remoteDataSource.updateBudgetSpent(oldTransaction.budgetId!, oldAmountChange);
       } else if (oldTransaction.amount != transaction.amount || oldTransaction.type != transaction.type) {
+        // Kasus 2: amount atau type berubah pada budget yang SAMA
         double oldEffect = oldTransaction.type == 'expense' ? oldTransaction.amount : -oldTransaction.amount;
         double newEffect = transaction.type == 'expense' ? transaction.amount : -transaction.amount;
         double changeForOldBudget = newEffect - oldEffect;
-        await remoteDataSource.updateBudgetSpent(oldTransaction.budgetId, changeForOldBudget);
+        await remoteDataSource.updateBudgetSpent(oldTransaction.budgetId!, changeForOldBudget);
       }
     }
 
-
-    if (transaction.budgetId.isNotEmpty && oldTransaction.budgetId != transaction.budgetId) {
-      double newAmountChange = transaction.type == 'expense' ? transaction.amount : -transaction.amount; // Efek ke budget baru
-      await remoteDataSource.updateBudgetSpent(transaction.budgetId, newAmountChange);
+    // Kasus 3: Transaksi baru dikaitkan dengan budget atau budgetId-nya berbeda dari sebelumnya
+    if (transaction.budgetId != null && transaction.budgetId!.isNotEmpty && oldTransaction.budgetId != transaction.budgetId) {
+      double newAmountChange = transaction.type == 'expense' ? transaction.amount : -transaction.amount;
+      await remoteDataSource.updateBudgetSpent(transaction.budgetId!, newAmountChange);
     }
   }
-
 
   @override
   Future<void> deleteTransaction(String transactionId, String budgetId, double amount, String transactionType) async {
     await remoteDataSource.deleteTransaction(transactionId);
     if (budgetId.isNotEmpty) {
-      double amountChange = transactionType == 'expense' ? -amount : amount; 
+      double amountChange = transactionType == 'expense' ? -amount : amount;
       await remoteDataSource.updateBudgetSpent(budgetId, amountChange);
     }
   }

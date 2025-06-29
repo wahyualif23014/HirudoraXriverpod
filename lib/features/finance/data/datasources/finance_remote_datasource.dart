@@ -92,10 +92,7 @@ class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource { // <---
   @override
   Future<void> updateBudgetSpent(String budgetId, double amountChange) async {
     try {
-      // Supabase tidak memiliki fitur 'runTransaction' seperti Firebase secara langsung untuk update angka.
-      // Kita perlu mengambil nilai saat ini, menghitung yang baru, lalu update.
-      // Ini bisa rentan terhadap race condition jika tidak ditangani dengan baik (misal: dengan database locks atau fungsi di Edge).
-      // Untuk tujuan awal, kita akan lakukan cara sederhana:
+
       
       final response = await _supabase.from('budgets').select('spent_amount').eq('id', budgetId).single();
 

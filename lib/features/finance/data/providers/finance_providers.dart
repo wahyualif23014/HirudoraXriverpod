@@ -105,65 +105,46 @@ final budgetNotifierProvider = AsyncNotifierProvider<BudgetNotifier, void>(
   BudgetNotifier.new,
 );
 
-
-// AsyncNotifierProvider untuk operasi tambah/update/delete transaksi
+// / AsyncNotifierProvider untuk operasi tambah/update/delete transaksi
 class TransactionNotifier extends AsyncNotifier<void> {
   @override
-  Future<void> build() async {}
+  Future<void> build() async {
+    // Tidak ada state awal yang perlu dibangun secara asinkron untuk notifier ini
+  }
 
   Future<void> addTransaction(TransactionEntity transaction) async {
-    state = const AsyncLoading();
+    state = const AsyncLoading(); // Set state loading
     try {
-      await ref.read(financeRepositoryProvider).addTransaction(transaction); // Langsung panggil repository
-
-      // --- LOGIKA LINTAS-KEBUTUHAN (CROSS-CUTTING CONCERN) ---
-      // Karena tanpa Use Case, logika untuk mengupdate budget spent setelah transaksi
-      // DITANGANI DI SINI (di Notifier/ViewModel).
-      if (transaction.budgetId.isNotEmpty) {
-        // Untuk transaksi 'income', amountChange ke spent adalah negatif (mengurangi spent)
-        // Untuk transaksi 'expense', amountChange ke spent adalah positif (menambah spent)
-        double amountChange = transaction.type == 'expense' ? transaction.amount : -transaction.amount;
-        await ref.read(budgetNotifierProvider.notifier).updateBudgetSpent(
-          transaction.budgetId,
-          amountChange,
-        );
-      }
-      state = const AsyncData(null);
+      // Panggil repository. Logika update budget SPENT harus sudah ada di dalam repository.
+      await ref.read(financeRepositoryProvider).addTransaction(transaction);
+      state = const AsyncData(null); // Set state sukses
     } catch (e, st) {
-      state = AsyncError(e, st);
-      rethrow;
+      state = AsyncError(e, st); // Set state error
+      rethrow; // Lempar kembali error agar bisa ditangkap di UI jika diperlukan
     }
   }
 
   Future<void> updateTransaction(TransactionEntity transaction) async {
-    state = const AsyncLoading();
+    state = const AsyncLoading(); // Set state loading
     try {
-
-      final oldTransaction = await ref.read(financeRepositoryProvider).getTransactionById(transaction.id);
-
-      // Lakukan update transaksi di database
-      await ref.read(financeRepositoryProvider).updateTransaction(transaction); // Ini akan memanggil logic di repo
-
-      // Re-fetch transactions stream untuk memastikan UI up-to-date (optional, karena realtime seharusnya menangani)
-      // ref.invalidate(transactionsStreamProvider);
-      
-      state = const AsyncData(null);
+      // Panggil repository. Logika update budget SPENT harus sudah ada di dalam repository.
+      await ref.read(financeRepositoryProvider).updateTransaction(transaction);
+      state = const AsyncData(null); // Set state sukses
     } catch (e, st) {
-      state = AsyncError(e, st);
-      rethrow;
+      state = AsyncError(e, st); // Set state error
+      rethrow; // Lempar kembali error
     }
   }
 
   Future<void> deleteTransaction(String transactionId, String budgetId, double amount, String transactionType) async {
-    state = const AsyncLoading();
+    state = const AsyncLoading(); // Set state loading
     try {
-      await ref.read(financeRepositoryProvider).deleteTransaction(transactionId, budgetId, amount, transactionType); // Hapus dari DB dan update budget di repo
-
-      // Setelah repository selesai menghapus dan mengupdate budget, kita bisa set state berhasil
-      state = const AsyncData(null);
+      // Panggil repository. Logika update budget SPENT harus sudah ada di dalam repository.
+      await ref.read(financeRepositoryProvider).deleteTransaction(transactionId, budgetId, amount, transactionType);
+      state = const AsyncData(null); // Set state sukses
     } catch (e, st) {
-      state = AsyncError(e, st);
-      rethrow;
+      state = AsyncError(e, st); // Set state error
+      rethrow; // Lempar kembali error
     }
   }
 }
@@ -173,21 +154,28 @@ final transactionNotifierProvider = AsyncNotifierProvider<TransactionNotifier, v
 );
 
 
-// --- Contoh Provider Lain (Tambahan untuk UI) ---
+// --- Provider-provider Lain (Tidak berubah, sudah benar) ---
 
 // Provider untuk mendapatkan budget berdasarkan ID
 final budgetByIdProvider = Provider.family<BudgetEntity?, String>((ref, id) {
-  return ref.watch(budgetsStreamProvider).when(
-        data: (budgets) {
-          try {
-            return budgets.firstWhere((budget) => budget.id == id);
-          } catch (_) {
-            return null;
-          }
-        },
-        loading: () => null,
-        error: (e, st) => null,
-      );
+  // Watch budgetsStreamProvider untuk mendapatkan daftar budget
+  final budgetsAsyncValue = ref.watch(budgetsStreamProvider);
+
+  // Gunakan .when() untuk mengekstrak data dari AsyncValue
+  return budgetsAsyncValue.when(
+    data: (budgets) {
+      // Ketika data tersedia, coba cari budget berdasarkan ID
+      try {
+        return budgets.firstWhere((budget) => budget.id == id);
+      } catch (_) {
+        // Jika tidak ditemukan, kembalikan null
+        return null;
+      }
+    },
+    // Saat loading atau error, kembalikan null atau nilai default yang sesuai
+    loading: () => null, // Saat loading, kita tidak punya budget, jadi null
+    error: (e, st) => null, // Saat error, kita tidak punya budget, jadi null
+  );
 });
 
 // Provider untuk menghitung ringkasan keuangan (misal: total pengeluaran bulan ini)
@@ -206,7 +194,6 @@ final monthlyFinanceSummaryProvider = StreamProvider.family<Map<String, double>,
           }
         }
       }
-      // Perhatikan: Stream.value digunakan karena data yang dikembalikan bersifat sync dari data AsyncValue
       return Stream.value({'income': totalIncome, 'expense': totalExpense, 'net': totalIncome - totalExpense});
     },
     loading: () => Stream.value({'income': 0.0, 'expense': 0.0, 'net': 0.0}),
@@ -215,9 +202,7 @@ final monthlyFinanceSummaryProvider = StreamProvider.family<Map<String, double>,
 });
 
 // Tambahkan provider untuk total balance Supabase
-// Ini akan menghitung total balance dari stream transaksi yang sudah ada
 final totalBalanceSupabaseProvider = StreamProvider<double>((ref) {
-  // Watch transactionsStreamProvider
   return ref.watch(transactionsStreamProvider).when(
     data: (transactions) {
       double totalIncome = 0.0;
@@ -229,12 +214,12 @@ final totalBalanceSupabaseProvider = StreamProvider<double>((ref) {
           totalExpense += tr.amount;
         }
       }
-      return Stream.value(totalIncome - totalExpense); // Return a stream with the calculated balance
+      return Stream.value(totalIncome - totalExpense);
     },
-    loading: () => Stream.value(0.0), // Return a default value when loading
+    loading: () => Stream.value(0.0),
     error: (err, stack) {
       print('Error calculating total balance from transactions stream: $err');
-      return Stream.value(0.0); // Return a default value on error
+      return Stream.value(0.0);
     },
   );
 });

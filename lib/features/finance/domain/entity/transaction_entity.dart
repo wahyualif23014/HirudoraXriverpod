@@ -1,71 +1,72 @@
-// lib/finance/domain/entity/transaction_entity.dart
+// lib/features/finance/domain/entity/transaction_entity.dart
 import 'package:equatable/equatable.dart';
 
 class TransactionEntity extends Equatable {
-  final String id; // ID dari Supabase (UUID)
-  final String? userId; // Opsional, jika nanti ada autentikasi
+  final String id;
+  final String? userId; 
   final double amount;
-  final String type; // 'income' atau 'expense'
+  final String type; // 'income' or 'expense'
+  final String category; // Tambahkan ini
   final String? description;
-  final DateTime date;
-  final String budgetId; // ID budget jika ada kaitannya
+  final DateTime date; // Ini akan dipetakan dari 'created_at' atau 'transaction_date'
+  final String? budgetId; // Tambahkan ini, bisa null jika tidak terkait budget
+  final DateTime? createdAt; // Tambahkan ini untuk melacak waktu pembuatan record di DB
 
   const TransactionEntity({
-    this.id = '', // Supabase akan generate ID, jadi default bisa kosong
+    this.id = '', // Default for new transactions
     this.userId,
     required this.amount,
     required this.type,
     this.description,
+    required this.category, // Wajib diisi sekarang
     required this.date,
-    this.budgetId = '', // Default kosong jika tidak terkait budget
+    this.budgetId,
+    this.createdAt, // Default null untuk yang baru, akan diisi dari DB
   });
 
-  // Contoh konversi dari JSON (dari Supabase)
-  factory TransactionEntity.fromJson(Map<String, dynamic> json) {
-    return TransactionEntity(
-      id: json['id'] as String,
-      userId: json['user_id'] as String?,
-      amount: (json['amount'] as num).toDouble(),
-      type: json['type'] as String,
-      description: json['description'] as String?,
-      date: DateTime.parse(json['created_at'] as String), // Asumsi nama kolom di Supabase adalah 'created_at'
-      budgetId: json['budget_id'] as String? ?? '', // Sesuaikan jika nama kolom berbeda
-    );
-  }
-
-  // Contoh konversi ke JSON (untuk dikirim ke Supabase)
-  Map<String, dynamic> toJson() {
-    return {
-      'amount': amount,
-      'type': type,
-      'description': description,
-      'created_at': date.toIso8601String(),
-      'budget_id': budgetId.isNotEmpty ? budgetId : null, // Kirim null jika kosong
-      // 'user_id': userId, // Aktifkan jika menggunakan user_id dari autentikasi
-    };
-  }
-
-  // Metode copyWith untuk membuat instance baru dengan properti yang diubah
+  // Method to create a copy with changed values
   TransactionEntity copyWith({
     String? id,
     String? userId,
     double? amount,
     String? type,
+    String? category,
     String? description,
     DateTime? date,
     String? budgetId,
+    DateTime? createdAt,
   }) {
     return TransactionEntity(
       id: id ?? this.id,
       userId: userId ?? this.userId,
       amount: amount ?? this.amount,
       type: type ?? this.type,
+      category: category ?? this.category,
       description: description ?? this.description,
       date: date ?? this.date,
       budgetId: budgetId ?? this.budgetId,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
+  // Method to convert to JSON format for Supabase
+  // Perhatikan: `date` di sini akan menjadi `created_at` di Supabase
+  // Jika Anda menambahkan kolom `transaction_date` di Supabase,
+  // Anda harus membuat `transaction_date` terpisah di sini dan di model.
+  Map<String, dynamic> toJson() {
+    return {
+      // 'id' tidak perlu disertakan saat INSERT (Supabase akan generate)
+      // 'id': id, // Hanya jika Anda melakukan UPDATE
+      'user_id': userId,
+      'amount': amount,
+      'type': type,
+      'category': category, // Pastikan ini ada di tabel Supabase
+      'description': description,
+      'created_at': date.toIso8601String(), // Mengirim tanggal transaksi ke kolom 'created_at'
+      'budget_id': budgetId == null || budgetId!.isEmpty ? null : budgetId, // Mengirim null jika kosong
+    };
+  }
+
   @override
-  List<Object?> get props => [id, userId, amount, type, description, date, budgetId];
+  List<Object?> get props => [id, userId, amount, type, description, category, date, budgetId, createdAt];
 }

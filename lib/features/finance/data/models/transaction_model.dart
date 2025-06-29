@@ -7,9 +7,11 @@ class TransactionModel extends TransactionEntity {
     super.userId,
     required super.amount,
     required super.type,
+    required super.category, // Tetap required di sini karena entity required
     super.description,
     required super.date,
     super.budgetId,
+    super.createdAt,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -18,22 +20,27 @@ class TransactionModel extends TransactionEntity {
       userId: json['user_id'] as String?,
       amount: (json['amount'] as num).toDouble(),
       type: json['type'] as String,
+      // --- PERBAIKAN DI SINI ---
+      category: json['category'] as String? ?? 'Uncategorized', // <--- Handle NULL: jika null, gunakan 'Uncategorized'
       description: json['description'] as String?,
       date: DateTime.parse(json['created_at'] as String),
       budgetId: json['budget_id'] as String? ?? '',
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : null,
     );
   }
 
-  // Tambahkan metode ini
+  @override
   TransactionEntity toEntity() {
     return TransactionEntity(
       id: id,
       userId: userId,
       amount: amount,
       type: type,
+      category: category,
       description: description,
       date: date,
       budgetId: budgetId,
+      createdAt: createdAt,
     );
   }
 
@@ -48,9 +55,11 @@ class TransactionModel extends TransactionEntity {
       userId: entity.userId,
       amount: entity.amount,
       type: entity.type,
+      category: entity.category,
       description: entity.description,
       date: entity.date,
       budgetId: entity.budgetId,
+      createdAt: entity.createdAt,
     );
   }
 }
