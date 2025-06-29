@@ -16,13 +16,13 @@ abstract class FinanceRemoteDataSource {
   Future<void> updateBudget(BudgetModel budget);
   Future<void> deleteBudget(String id);
   Future<void> updateBudgetSpent(String budgetId, double amountChange);
-  Future<BudgetModel?> getBudgetById(String id); // <--- Tambahkan ini untuk konsistensi
+  Future<BudgetModel?> getBudgetById(String id);
 
   // Transaction
   Stream<List<TransactionModel>> getTransactionsStream();
   Future<void> addTransaction(TransactionModel transaction);
   Future<void> updateTransaction(TransactionModel transaction);
-  Future<void> deleteTransaction(String id); // Di sini hanya perlu ID untuk delete dari DB
+  Future<void> deleteTransaction(String id); 
   Future<TransactionModel?> getTransactionById(String id); // <--- Tambahkan ini
 }
 
@@ -43,7 +43,6 @@ class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource { // <---
           return maps.map((map) => BudgetModel.fromJson(map)).toList();
         }).handleError((error, stackTrace) {
           print('Supabase Stream Error in getBudgetsStream: $error\n$stackTrace');
-          // Dalam kasus error, Anda mungkin ingin melemparkan kembali atau mengembalikan list kosong
           throw Exception('Failed to load budgets stream: $error');
         });
   }
