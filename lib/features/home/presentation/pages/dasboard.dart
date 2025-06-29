@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hirudorax/features/finance/data/providers/finance_providers.dart';
-import 'package:intl/intl.dart'; // Tambahkan untuk format mata uang
+import 'package:intl/intl.dart'; 
 
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
 import '../../../../app/routes/routes.dart';
-// Import provider keuangan dari finance feature
 
 
 final recentActivityProvider = StateProvider<String>((ref) => '2 new activities logged today');
@@ -20,7 +19,6 @@ class DashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch totalBalanceSupabaseProvider yang menghitung dari transaksi Supabase
     final totalBalanceAsyncValue = ref.watch(totalBalanceSupabaseProvider); // <--- Perubahan di sini
     final String recentActivity = ref.watch(recentActivityProvider);
     final String nextHabit = ref.watch(nextHabitProvider);
@@ -56,7 +54,6 @@ class DashboardPage extends ConsumerWidget {
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.secondaryText),
                 ),
                 const SizedBox(height: 8),
-                // Gunakan totalBalanceAsyncValue.when untuk menampilkan data atau status loading/error
                 totalBalanceAsyncValue.when( // <--- Perubahan di sini
                   data: (balance) => Text(
                     'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(balance)}', // Format mata uang
@@ -131,7 +128,7 @@ class DashboardPage extends ConsumerWidget {
                   // ScaffoldMessenger.of(context).showSnackBar(
                   //   SnackBar(content: Text('Transaksi ditambahkan!')),
                   // );
-                  context.go(AppRoutes.addTransactionPath); // Ini navigasi asli Anda
+                  context.go(AppRoutes.addTransactionPath); 
                 },
               ),
               _buildQuickActionButton(
