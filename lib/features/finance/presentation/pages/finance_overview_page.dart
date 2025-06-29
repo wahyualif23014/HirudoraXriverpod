@@ -2,16 +2,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart'; // Untuk format mata uang dan tanggal
+import 'package:intl/intl.dart'; 
 
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
-import '../../../../app/themes/app_theme.dart'; // Menggunakan AppTextStyles
+import '../../../../app/themes/app_theme.dart'; 
 import '../../../../app/routes/routes.dart';
 
 import '../../domain/entity/transaction_entity.dart';
-import '../../data/providers/finance_providers.dart'; // Impor finance_providers Anda
+import '../../data/providers/finance_providers.dart';
 
 class FinanceOverviewPage extends ConsumerWidget {
   const FinanceOverviewPage({super.key});
@@ -39,7 +39,7 @@ class FinanceOverviewPage extends ConsumerWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Halaman Laporan Keuangan (Coming Soon)!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
-                backgroundColor: AppColors.accentBlue, // Gunakan warna tema Anda
+                backgroundColor: AppColors.accentBlue,
               ),
             );
           },
@@ -120,9 +120,7 @@ class FinanceOverviewPage extends ConsumerWidget {
                         if (confirmed) {
                           await ref.read(transactionNotifierProvider.notifier).deleteTransaction(id, budgetId, amount, type);
                           
-                          // Menggunakan .when() untuk menangani state Notifier
-                          // Pastikan untuk membaca state Notifier SETELAH operasi async selesai
-                          // Ini akan dijalankan setelah Future dari deleteTransaction() selesai
+                         
                           final stateAfterDelete = ref.read(transactionNotifierProvider);
                           stateAfterDelete.when(
                             data: (_) {
