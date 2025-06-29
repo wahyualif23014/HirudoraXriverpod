@@ -593,10 +593,6 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Ringkasan Anggaran Bulan Ini',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText),
-              ),
               const SizedBox(height: 10),
               _buildSummaryRow('Total Anggaran', totalAllocated, AppColors.accentBlue),
               _buildSummaryRow('Terpakai', totalSpent, progressBarColor),

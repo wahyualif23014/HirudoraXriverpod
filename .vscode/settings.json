@@ -1,3 +1,7 @@
 {
-    "cmake.sourceDirectory": "C:/HirudoraXriverpod/hirudorax/windows"
+    "cmake.sourceDirectory": "C:/HirudoraXriverpod/hirudorax/windows",
+    "flutterTools.displayGetxContextMenu": false,
+    "flutterTools.displayMobxContextMenu": false,
+    "flutterTools.displayRiverpodContextMenu": true,
+    "flutterTools.displayModularContextMenu": false
 }

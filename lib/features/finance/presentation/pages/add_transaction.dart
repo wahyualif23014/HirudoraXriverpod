@@ -10,7 +10,6 @@ import '../../../../app/themes/colors.dart';
 import '../../../../app/themes/app_theme.dart'; // Menggunakan AppTextStyles
 
 import '../../domain/entity/budget_entity.dart'; // Impor BudgetEntity
-// import '../../data/providers/finance_providers.dart'; // Ini duplikat, sudah diimpor di atas
 
 class AddTransaction extends ConsumerStatefulWidget { // Nama kelas sudah benar sebagai BudgetPage
   const AddTransaction({super.key});
