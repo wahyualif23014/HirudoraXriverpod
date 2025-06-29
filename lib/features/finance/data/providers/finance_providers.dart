@@ -138,8 +138,7 @@ class TransactionNotifier extends AsyncNotifier<void> {
   Future<void> updateTransaction(TransactionEntity transaction) async {
     state = const AsyncLoading();
     try {
-      // Logic untuk mengupdate spent di budget karena transaksi diupdate:
-      // Ambil transaksi LAMA dari database menggunakan ID
+
       final oldTransaction = await ref.read(financeRepositoryProvider).getTransactionById(transaction.id);
 
       // Lakukan update transaksi di database
