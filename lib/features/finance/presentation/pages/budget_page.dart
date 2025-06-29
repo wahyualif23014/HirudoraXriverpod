@@ -68,7 +68,7 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
           child: GlassContainer(
-            borderRadius: 30, // Hanya sudut atas yang melengkung
+            borderRadius: 30, 
             blur: 20,
             opacity: 0.2,
             linearGradientColors: [
