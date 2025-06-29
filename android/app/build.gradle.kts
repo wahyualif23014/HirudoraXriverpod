@@ -5,7 +5,7 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services") version "4.4.2"
+    id("com.google.gms.google-services") version "4.4.3"
 }
 
 android {
@@ -44,7 +44,8 @@ flutter {
 dependencies {
     // Selalu gunakan versi BoM terbaru untuk mengelola versi library Firebase.
     // Ini memastikan semua library Firebase Anda menggunakan versi yang kompatibel satu sama lain.
-    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
+    implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
+    implementation("com.google.firebase:firebase-analytics")
     
     // Anda juga perlu menambahkan dependensi Firebase yang spesifik di sini,
     // yang mengacu pada BOM di atas. Contoh:

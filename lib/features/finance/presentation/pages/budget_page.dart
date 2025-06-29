@@ -6,7 +6,7 @@ import 'package:intl/intl.dart'; // Untuk format mata uang
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
-import '../../../../app/themes/app_theme.dart'; // Menggunakan text_styles
+import '../../../../app/themes/app_theme.dart'; // Menggunakan AppTextStyles
 
 import '../../domain/entity/budget_entity.dart'; // Impor BudgetEntity
 import '../../data/providers/finance_providers.dart'; // Impor finance_providers
@@ -20,15 +20,20 @@ class BudgetPage extends ConsumerStatefulWidget {
 
 class _BudgetPageState extends ConsumerState<BudgetPage> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
-  final TextEditingController _limitController = TextEditingController();
+  final TextEditingController _allocatedAmountController = TextEditingController();
+
+  DateTime? _startDate;
+  DateTime? _endDate;
 
   BudgetEntity? _editingBudget;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _categoryController.dispose();
-    _limitController.dispose();
+    _allocatedAmountController.dispose();
     super.dispose();
   }
 
@@ -37,11 +42,18 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     setState(() {
       _editingBudget = budget;
       if (budget != null) {
+        _nameController.text = budget.name;
         _categoryController.text = budget.category;
-        _limitController.text = budget.limit.toString();
+        // Gunakan NumberFormat untuk memformat angka saat mengisi form untuk diedit
+        _allocatedAmountController.text = NumberFormat.decimalPattern('id_ID').format(budget.allocatedAmount);
+        _startDate = budget.startDate;
+        _endDate = budget.endDate;
       } else {
+        _nameController.clear();
         _categoryController.clear();
-        _limitController.clear();
+        _allocatedAmountController.clear();
+        _startDate = null;
+        _endDate = null;
       }
     });
 
@@ -52,10 +64,11 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
+            // Padding bawah disesuaikan dengan tinggi keyboard
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
           child: GlassContainer(
-            borderRadius: 30,
+            borderRadius: 30, // Hanya sudut atas yang melengkung
             blur: 20,
             opacity: 0.2,
             linearGradientColors: [
@@ -63,24 +76,34 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
               AppColors.glassBackgroundEnd.withOpacity(0.2),
             ],
             customBorder: Border.all(color: AppColors.glassBackgroundStart.withOpacity(0.3), width: 1.5),
-            child: Padding(
+            child: SingleChildScrollView( // Tambahkan SingleChildScrollView agar konten bisa digulir
               padding: const EdgeInsets.all(24.0),
               child: Form(
                 key: _formKey,
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.min, // Penting agar Column tidak mengambil ruang lebih
                   children: [
                     Text(
                       budget == null ? 'Tambah Anggaran Baru' : 'Edit Anggaran',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.primaryText),
                     ),
                     const SizedBox(height: 20),
-                    TextFormField(
+                    // TextFormField: Nama Anggaran
+                    _buildTextFormField(
+                      controller: _nameController,
+                      labelText: 'Nama Anggaran (ex: Anggaran Bulanan)',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Nama Anggaran tidak boleh kosong';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 15), // Spasi antar TextFormField
+                    // TextFormField: Kategori
+                    _buildTextFormField(
                       controller: _categoryController,
-                      style: const TextStyle(color: AppColors.primaryText),
-                      decoration: const InputDecoration(
-                        labelText: 'Kategori',
-                      ),
+                      labelText: 'Kategori (ex: Makanan, Transportasi)',
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Kategori tidak boleh kosong';
@@ -88,25 +111,105 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      controller: _limitController,
+                    const SizedBox(height: 15), // Spasi antar TextFormField
+                    // TextFormField: Jumlah Anggaran
+                    _buildTextFormField(
+                      controller: _allocatedAmountController,
+                      labelText: 'Jumlah Anggaran (Rp)',
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(color: AppColors.primaryText),
-                      decoration: const InputDecoration(
-                        labelText: 'Batas Anggaran (Rp)',
-                      ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Batas anggaran tidak boleh kosong';
+                          return 'Jumlah anggaran tidak boleh kosong';
                         }
-                        if (double.tryParse(value) == null || double.parse(value) <= 0) {
-                          return 'Masukkan jumlah yang valid';
+                        // Gunakan NumberFormat untuk parsing angka yang mungkin memiliki format lokal
+                        try {
+                          final parsed = NumberFormat.decimalPattern('id_ID').parse(value);
+                          if (parsed <= 0) {
+                            return 'Masukkan jumlah yang valid (lebih dari 0)';
+                          }
+                        } catch (_) {
+                          return 'Masukkan angka yang valid (contoh: 1.250.000)';
                         }
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15), // Spasi antar TextFormField
+                    // Input Tanggal Mulai
+                    _buildDatePickerField(
+                      context,
+                      label: 'Tanggal Mulai',
+                      selectedDate: _startDate,
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: _startDate ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                          builder: (context, child) {
+                            return Theme( // Terapkan tema untuk DatePicker
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: AppColors.accentBlue, // Warna header DatePicker
+                                  onPrimary: AppColors.primaryText, // Warna teks di header
+                                  surface: AppColors.secondaryBackground, // Background DatePicker
+                                  onSurface: AppColors.primaryText, // Warna teks tanggal
+                                ),
+                                textButtonTheme: TextButtonThemeData(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppColors.accentBlue, // Warna tombol (OK, Cancel)
+                                  ),
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null) { // && picked != _startDate
+                          setState(() {
+                            _startDate = picked;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 15), // Spasi antar TextFormField
+                    // Input Tanggal Akhir
+                    _buildDatePickerField(
+                      context,
+                      label: 'Tanggal Akhir',
+                      selectedDate: _endDate,
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: _endDate ?? _startDate ?? DateTime.now(),
+                          firstDate: _startDate ?? DateTime(2000), // Tidak boleh sebelum tanggal mulai
+                          lastDate: DateTime(2101),
+                          builder: (context, child) { // Terapkan tema untuk DatePicker
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: AppColors.accentBlue,
+                                  onPrimary: AppColors.primaryText,
+                                  surface: AppColors.secondaryBackground,
+                                  onSurface: AppColors.primaryText,
+                                ),
+                                textButtonTheme: TextButtonThemeData(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppColors.accentBlue,
+                                  ),
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null) { // && picked != _endDate
+                          setState(() {
+                            _endDate = picked;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 20), // Spasi sebelum tombol
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -129,6 +232,25 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                           child: ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
+                                // Validasi tambahan untuk tanggal (sudah ada, pertahankan)
+                                if (_startDate == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Tanggal Mulai tidak boleh kosong', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
+                                  );
+                                  return;
+                                }
+                                if (_endDate == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Tanggal Akhir tidak boleh kosong', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
+                                  );
+                                  return;
+                                }
+                                if (_endDate!.isBefore(_startDate!)) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Tanggal Akhir tidak boleh sebelum Tanggal Mulai', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
+                                  );
+                                  return;
+                                }
                                 _saveBudget();
                               }
                             },
@@ -158,45 +280,159 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     );
   }
 
+  // Helper widget baru untuk TextFormField yang konsisten (styling profesional)
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String labelText,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: AppColors.primaryText), // Warna teks input
+      decoration: InputDecoration(
+        labelText: labelText,
+        labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText), // Warna label
+        hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.tertiaryText),
+        enabledBorder: OutlineInputBorder( // Border saat tidak aktif
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: AppColors.tertiaryText.withOpacity(0.5), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder( // Border saat fokus
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: AppColors.accentBlue, width: 2), // Warna saat fokus
+        ),
+        errorBorder: OutlineInputBorder( // Border saat error
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder( // Border saat error dan fokus
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
+        ),
+        filled: true,
+        fillColor: AppColors.secondaryBackground.withOpacity(0.3), // Warna background input field
+      ),
+      validator: validator,
+    );
+  }
+
+  // Helper widget untuk input tanggal (styling profesional)
+  Widget _buildDatePickerField(
+    BuildContext context, {
+    required String label,
+    required DateTime? selectedDate,
+    required VoidCallback onTap,
+  }) {
+    return TextFormField(
+      readOnly: true, // Tidak bisa diketik langsung
+      controller: TextEditingController(
+        text: selectedDate == null ? '' : DateFormat('dd/MM/yyyy').format(selectedDate),
+      ),
+      style: const TextStyle(color: AppColors.primaryText),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
+        suffixIcon: const Icon(Icons.calendar_today, color: AppColors.secondaryText), // Icon kalender
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: AppColors.tertiaryText.withOpacity(0.5), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: AppColors.accentBlue, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
+        ),
+        filled: true,
+        fillColor: AppColors.secondaryBackground.withOpacity(0.3),
+      ),
+      onTap: onTap,
+      validator: (value) {
+        if (selectedDate == null) {
+          return '$label tidak boleh kosong';
+        }
+        return null;
+      },
+    );
+  }
+
+
   // Fungsi untuk menyimpan budget (tambah atau update)
   void _saveBudget() async {
     final budgetNotifier = ref.read(budgetNotifierProvider.notifier);
-    final newBudget = BudgetEntity(
-      id: _editingBudget?.id, // Pertahankan ID jika sedang mengedit
-      category: _categoryController.text,
-      limit: double.parse(_limitController.text),
-      spent: _editingBudget?.spent ?? 0.0, 
-    );
+    
+    // Pastikan _startDate dan _endDate tidak null (sudah divalidasi sebelumnya, ini sebagai fallback)
+    if (_startDate == null || _endDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Tanggal mulai dan akhir harus dipilih.', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
+      );
+      return;
+    }
 
+    final BudgetEntity budgetToSave;
     if (_editingBudget == null) {
-      await budgetNotifier.addBudget(newBudget);
+      // Tambah baru
+      budgetToSave = BudgetEntity(
+        name: _nameController.text,
+        category: _categoryController.text,
+        // Pastikan parsing menggunakan NumberFormat untuk input angka
+        allocatedAmount: NumberFormat.decimalPattern('id_ID').parse(_allocatedAmountController.text).toDouble(),
+        startDate: _startDate!,
+        endDate: _endDate!,
+        spentAmount: 0.0, // Default untuk budget baru
+      );
+      await budgetNotifier.addBudget(budgetToSave);
     } else {
-      await budgetNotifier.updateBudget(newBudget);
+      // Edit yang sudah ada
+      budgetToSave = _editingBudget!.copyWith(
+        name: _nameController.text,
+        category: _categoryController.text,
+        // Pastikan parsing menggunakan NumberFormat untuk input angka
+        allocatedAmount: NumberFormat.decimalPattern('id_ID').parse(_allocatedAmountController.text).toDouble(),
+        startDate: _startDate,
+        endDate: _endDate,
+        // spentAmount tidak diubah dari UI di sini, akan diubah oleh transaksi
+      );
+      await budgetNotifier.updateBudget(budgetToSave);
     }
 
     if (mounted) {
-      if (budgetNotifier.state is AsyncData) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _editingBudget == null ? 'Anggaran berhasil ditambahkan!' : 'Anggaran berhasil diperbarui!',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText),
+      final budgetActionState = ref.read(budgetNotifierProvider);
+      budgetActionState.when(
+        data: (_) {
+          Navigator.pop(context); // Tutup bottom sheet
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _editingBudget == null ? 'Anggaran berhasil ditambahkan!' : 'Anggaran berhasil diperbarui!',
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText),
+              ),
+              backgroundColor: AppColors.accentGreen,
             ),
-            backgroundColor: AppColors.accentGreen,
-          ),
-        );
-        Navigator.pop(context);
-      } else if (budgetNotifier.state is AsyncError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Gagal menyimpan anggaran: ${(budgetNotifier.state as AsyncError).error}',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText),
+          );
+        },
+        loading: () { }, // Tidak perlu UI loading di sini karena sudah ada di FAB
+        error: (error, stack) {
+          Navigator.pop(context); // Tutup bottom sheet jika error dan ingin menampilkan SnackBar
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Gagal menyimpan anggaran: ${error.toString().split(':')[0]}',
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText),
+              ),
+              backgroundColor: AppColors.error,
             ),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+          );
+        },
+      );
     }
   }
 
@@ -223,23 +459,28 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
               final budgetNotifier = ref.read(budgetNotifierProvider.notifier);
               await budgetNotifier.deleteBudget(id);
               if (mounted) {
-                if (budgetNotifier.state is AsyncData) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Anggaran berhasil dihapus!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
-                      backgroundColor: AppColors.accentGreen,
-                    ),
-                  );
-                  Navigator.pop(context); // Tutup dialog
-                } else if (budgetNotifier.state is AsyncError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Gagal menghapus anggaran: ${(budgetNotifier.state as AsyncError).error}', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
-                      backgroundColor: AppColors.error,
-                    ),
-                  );
-                  Navigator.pop(context); // Tutup dialog
-                }
+                final budgetActionState = ref.read(budgetNotifierProvider);
+                budgetActionState.when(
+                  data: (_) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Anggaran berhasil dihapus!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
+                        backgroundColor: AppColors.accentGreen,
+                      ),
+                    );
+                    Navigator.pop(context); // Tutup dialog
+                  },
+                  loading: () {}, // Tidak perlu UI loading
+                  error: (error, stack) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Gagal menghapus anggaran: ${error.toString().split(':')[0]}', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                    Navigator.pop(context); // Tutup dialog
+                  },
+                );
               }
             },
             style: ElevatedButton.styleFrom(
@@ -276,7 +517,7 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
             ),
             const SizedBox(height: 15),
 
-            // --- Daftar Kategori Anggaran (Real-time dari Firebase) ---
+            // --- Daftar Kategori Anggaran (Real-time dari Supabase) ---
             Expanded(
               child: budgetsAsyncValue.when(
                 data: (budgets) {
@@ -293,10 +534,13 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                     itemCount: budgets.length,
                     itemBuilder: (context, index) {
                       final budget = budgets[index];
-                      return _BudgetCategoryItem(
-                        budget: budget,
-                        onEdit: () => _showBudgetForm(budget: budget),
-                        onDelete: () => _deleteBudget(budget.id!),
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: _BudgetCategoryItem(
+                          budget: budget,
+                          onEdit: () => _showBudgetForm(budget: budget),
+                          onDelete: () => _deleteBudget(budget.id),
+                        ),
                       );
                     },
                   );
@@ -304,7 +548,7 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                 loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
                 error: (error, stack) => Center(
                   child: Text(
-                    'Gagal memuat anggaran: $error',
+                    'Gagal memuat anggaran: ${error.toString().split(':')[0]}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error),
                   ),
                 ),
@@ -314,7 +558,7 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: budgetActionState.isLoading ? null : () => _showBudgetForm(), // Nonaktifkan saat loading
+        onPressed: budgetActionState.isLoading ? null : () => _showBudgetForm(),
         backgroundColor: AppColors.accentBlue.withOpacity(0.8),
         child: budgetActionState.isLoading
             ? CircularProgressIndicator(color: AppColors.primaryText)
@@ -336,10 +580,10 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
       customBorder: Border.all(color: AppColors.glassBackgroundStart.withOpacity(0.2), width: 1),
       child: budgetsAsyncValue.when(
         data: (budgets) {
-          final double totalLimit = budgets.fold(0.0, (sum, budget) => sum + budget.limit);
-          final double totalSpent = budgets.fold(0.0, (sum, budget) => sum + budget.spent);
-          final double remaining = totalLimit - totalSpent;
-          final double percentageUsed = totalLimit > 0 ? (totalSpent / totalLimit).clamp(0.0, 1.0) : 0.0;
+          final double totalAllocated = budgets.fold(0.0, (sum, budget) => sum + budget.allocatedAmount);
+          final double totalSpent = budgets.fold(0.0, (sum, budget) => sum + budget.spentAmount);
+          final double remaining = totalAllocated - totalSpent;
+          final double percentageUsed = totalAllocated > 0 ? (totalSpent / totalAllocated).clamp(0.0, 1.0) : 0.0;
           Color progressBarColor = AppColors.accentGreen;
           if (percentageUsed > 0.8) {
             progressBarColor = AppColors.error;
@@ -355,7 +599,7 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText),
               ),
               const SizedBox(height: 10),
-              _buildSummaryRow('Total Anggaran', totalLimit, AppColors.accentBlue),
+              _buildSummaryRow('Total Anggaran', totalAllocated, AppColors.accentBlue),
               _buildSummaryRow('Terpakai', totalSpent, progressBarColor),
               _buildSummaryRow('Sisa', remaining, remaining >= 0 ? AppColors.accentGreen : AppColors.error),
               const SizedBox(height: 15),
@@ -372,15 +616,15 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
               Text(
                 '${(percentageUsed * 100).toStringAsFixed(1)}% Terpakai',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: progressBarColor,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: progressBarColor,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
             ],
           );
         },
         loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
-        error: (error, stack) => Center(child: Text('Gagal memuat ringkasan: $error', style: TextStyle(color: AppColors.error))),
+        error: (error, stack) => Center(child: Text('Gagal memuat ringkasan: ${error.toString().split(':')[0]}', style: TextStyle(color: AppColors.error))),
       ),
     );
   }
@@ -419,13 +663,17 @@ class _BudgetCategoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double percentageSpent = budget.limit > 0 ? (budget.spent / budget.limit) : 0.0;
+    final double percentageSpent = budget.allocatedAmount > 0 ? (budget.spentAmount / budget.allocatedAmount).clamp(0.0, 1.0) : 0.0;
     Color progressColor = AppColors.accentGreen;
     if (percentageSpent > 0.8) {
       progressColor = AppColors.error;
     } else if (percentageSpent > 0.5) {
       progressColor = AppColors.accentOrange;
     }
+
+    final dateFormat = DateFormat('dd MMM yyyy'); // Menambahkan tahun ke format
+    final String formattedStartDate = dateFormat.format(budget.startDate);
+    final String formattedEndDate = dateFormat.format(budget.endDate);
 
     return GlassContainer(
       borderRadius: 15,
@@ -442,10 +690,23 @@ class _BudgetCategoryItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  budget.category,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.primaryText),
-                  overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      budget.name, // Menggunakan properti 'name'
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.primaryText, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      'Kategori: ${budget.category}', // Menampilkan kategori
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
+                    ),
+                    Text(
+                      'Periode: $formattedStartDate - $formattedEndDate', // Menampilkan periode
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.tertiaryText),
+                    ),
+                  ],
                 ),
               ),
               Row(
@@ -467,11 +728,11 @@ class _BudgetCategoryItem extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Limit: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.limit)}',
+            'Dialokasikan: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.allocatedAmount)}', // Menggunakan allocatedAmount
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
           ),
           Text(
-            'Terpakai: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.spent)}',
+            'Terpakai: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.spentAmount)}', // Menggunakan spentAmount
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: progressColor),
           ),
           const SizedBox(height: 10),
@@ -488,9 +749,9 @@ class _BudgetCategoryItem extends StatelessWidget {
           Text(
             '${(percentageSpent * 100).toStringAsFixed(1)}% Terpakai',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: progressColor.withOpacity(0.8),
-              fontWeight: FontWeight.bold,
-            ),
+                  color: progressColor.withOpacity(0.8),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ],
       ),

@@ -1,23 +1,30 @@
 // lib/features/finance/presentation/providers/finance_providers.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_database/firebase_database.dart'; // Untuk FirebaseDatabase.instance
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Import Domain Layer (Entities & Repository Interface)
-import '../../domain/entity/budget_entity.dart';
-import '../../domain/entity/transaction_entity.dart';
-import '../../data/repositories/finance_repository.dart';
+import '../../domain/entity/budget_entity.dart'; // Sudah benar
+import '../../domain/entity/transaction_entity.dart'; // Sudah benar
+import '../../data/repositories/finance_repository.dart'; // Sudah benar (interface)
 
 // Import Data Layer (Datasource & Repository Implementation)
-import '../../data/datasources/finance_remote_datasource.dart';
-import '../../data/repositories/finance_repository_impl.dart';
+import '../../data/datasources/finance_remote_datasource.dart'; // Ini interface FinanceRemoteDataSource
+// Anda perlu mengimpor implementasi konkret dari Supabase
+import '../../data/datasources/finance_supabase_datasource.dart'; // <--- Perbaikan import
+import '../../data/repositories/finance_repository_impl.dart'; // Sudah benar
 
+// Hapus import yang tidak perlu atau duplikat
+// import '../datasources/finance_supabase_datasource.dart'; // Hapus ini jika di atas sudah benar
+// import '../../../finance/data/datasources/finance_supabase_datasource.dart'; // Hapus ini jika di atas sudah benar
 
 // --- Dependency Providers (Lapisan terbawah, diakses oleh Notifier) ---
 
-// Provider untuk Remote Data Source (implementasi langsung ke Firebase)
+// Provider untuk Remote Data Source (implementasi langsung ke Supabase)
+// Ini adalah tempat kita menginisialisasi FinanceSupabaseDataSourceImpl
 final financeRemoteDataSourceProvider = Provider<FinanceRemoteDataSource>((ref) {
-  // Ini akan mendapatkan instance FirebaseDatabase.instance yang sudah diinisialisasi di main.dart
-  return FinanceRemoteDataSourceImpl(FirebaseDatabase.instance);
+  // Menggunakan Supabase.instance.client yang sudah diinisialisasi di main.dart
+  // Pastikan FinanceSupabaseDataSourceImpl diimpor dengan benar di atas
+  return FinanceSupabaseDataSourceImpl(Supabase.instance.client);
 });
 
 // Provider untuk Repository (implementasi dari interface domain)
@@ -48,8 +55,7 @@ final transactionsStreamProvider = StreamProvider<List<TransactionEntity>>((ref)
 class BudgetNotifier extends AsyncNotifier<void> {
   @override
   Future<void> build() async {
-    // Ini dieksekusi saat notifier pertama kali dibuat.
-    // Untuk operasi CRUD, state awal biasanya tidak perlu di-load di sini.
+    // Tidak perlu load data di sini untuk operasi CRUD
   }
 
   Future<void> addBudget(BudgetEntity budget) async {
@@ -85,17 +91,12 @@ class BudgetNotifier extends AsyncNotifier<void> {
     }
   }
 
-  // Metode untuk update spent (diakses oleh TransactionNotifier setelah add/delete transaksi)
   Future<void> updateBudgetSpent(String budgetId, double amountChange) async {
-    // Note: Metode ini tidak perlu mengatur state AsyncLoading/AsyncData/AsyncError sendiri
-    // karena biasanya dipanggil dari dalam Notifier lain yang sudah mengelola state-nya.
-    // Ini lebih mirip seperti metode helper di dalam Notifier.
     try {
       await ref.read(financeRepositoryProvider).updateBudgetSpent(budgetId, amountChange);
     } catch (e, st) {
-      // Log error, tapi jangan set state dari notifier ini agar tidak mengganggu state utama BudgetNotifier
       print('Error updating budget spent from BudgetNotifier: $e\n$st');
-      rethrow; 
+      rethrow;
     }
   }
 }
@@ -119,8 +120,9 @@ class TransactionNotifier extends AsyncNotifier<void> {
       // Karena tanpa Use Case, logika untuk mengupdate budget spent setelah transaksi
       // DITANGANI DI SINI (di Notifier/ViewModel).
       if (transaction.budgetId.isNotEmpty) {
+        // Untuk transaksi 'income', amountChange ke spent adalah negatif (mengurangi spent)
+        // Untuk transaksi 'expense', amountChange ke spent adalah positif (menambah spent)
         double amountChange = transaction.type == 'expense' ? transaction.amount : -transaction.amount;
-        // Panggil metode updateBudgetSpent dari BudgetNotifier
         await ref.read(budgetNotifierProvider.notifier).updateBudgetSpent(
           transaction.budgetId,
           amountChange,
@@ -136,19 +138,15 @@ class TransactionNotifier extends AsyncNotifier<void> {
   Future<void> updateTransaction(TransactionEntity transaction) async {
     state = const AsyncLoading();
     try {
-      // Untuk update, jika jumlah atau budgetId transaksi berubah,
-      // Anda perlu logika yang lebih kompleks untuk mengupdate budget spent
-      // (misal: hitung selisih atau ambil transaksi lama dulu).
-      // Ini membutuhkan pemanggilan Repository atau Datasource untuk mendapatkan data lama.
-      // Karena kita tidak punya UseCase, logic ini bisa ditaruh di sini
-      // atau di Repository jika dianggap bagian dari operasi update transaksional.
-      // Untuk kesederhanaan awal, kita hanya update data transaksinya.
-      await ref.read(financeRepositoryProvider).updateTransaction(transaction);
-      
-      // Jika Anda ingin mengupdate spent di budget karena transaksi diupdate:
-      // 1. Ambil transaksi LAMA dari database menggunakan ID (jika ada metode di repository/datasource).
-      // 2. Hitung 'amountChange' berdasarkan perbedaan antara transaksi lama dan baru.
-      // 3. Panggil ref.read(budgetNotifierProvider.notifier).updateBudgetSpent().
+      // Logic untuk mengupdate spent di budget karena transaksi diupdate:
+      // Ambil transaksi LAMA dari database menggunakan ID
+      final oldTransaction = await ref.read(financeRepositoryProvider).getTransactionById(transaction.id);
+
+      // Lakukan update transaksi di database
+      await ref.read(financeRepositoryProvider).updateTransaction(transaction); // Ini akan memanggil logic di repo
+
+      // Re-fetch transactions stream untuk memastikan UI up-to-date (optional, karena realtime seharusnya menangani)
+      // ref.invalidate(transactionsStreamProvider);
       
       state = const AsyncData(null);
     } catch (e, st) {
@@ -157,22 +155,12 @@ class TransactionNotifier extends AsyncNotifier<void> {
     }
   }
 
-  // Untuk delete, kita butuh detail transaksi yang dihapus untuk mengembalikan spent ke budget
   Future<void> deleteTransaction(String transactionId, String budgetId, double amount, String transactionType) async {
     state = const AsyncLoading();
     try {
-      await ref.read(financeRepositoryProvider).deleteTransaction(transactionId, budgetId, amount, transactionType); // Hapus dari DB
+      await ref.read(financeRepositoryProvider).deleteTransaction(transactionId, budgetId, amount, transactionType); // Hapus dari DB dan update budget di repo
 
-      // --- LOGIKA LINTAS-KEBUTUHAN ---
-      // Update spent pada budget terkait setelah transaksi dihapus
-      if (budgetId.isNotEmpty) {
-        double amountChange = transactionType == 'expense' ? -amount : amount; // Mengembalikan jumlah ke budget
-        // Panggil metode updateBudgetSpent dari BudgetNotifier
-        await ref.read(budgetNotifierProvider.notifier).updateBudgetSpent(
-          budgetId,
-          amountChange,
-        );
-      }
+      // Setelah repository selesai menghapus dan mengupdate budget, kita bisa set state berhasil
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);
@@ -189,9 +177,7 @@ final transactionNotifierProvider = AsyncNotifierProvider<TransactionNotifier, v
 // --- Contoh Provider Lain (Tambahan untuk UI) ---
 
 // Provider untuk mendapatkan budget berdasarkan ID
-// Berguna jika Anda ingin menampilkan detail budget di halaman lain
 final budgetByIdProvider = Provider.family<BudgetEntity?, String>((ref, id) {
-  // Watch stream budgets, lalu cari yang sesuai ID
   return ref.watch(budgetsStreamProvider).when(
         data: (budgets) {
           try {
@@ -200,13 +186,12 @@ final budgetByIdProvider = Provider.family<BudgetEntity?, String>((ref, id) {
             return null;
           }
         },
-        loading: () => null, // Sedang loading
-        error: (e, st) => null, // Ada error
+        loading: () => null,
+        error: (e, st) => null,
       );
 });
 
 // Provider untuk menghitung ringkasan keuangan (misal: total pengeluaran bulan ini)
-// Ini akan mendengarkan stream transaksi dan melakukan kalkulasi.
 final monthlyFinanceSummaryProvider = StreamProvider.family<Map<String, double>, DateTime>((ref, monthYear) {
   return ref.watch(transactionsStreamProvider).when(
     data: (transactions) {
@@ -222,9 +207,35 @@ final monthlyFinanceSummaryProvider = StreamProvider.family<Map<String, double>,
           }
         }
       }
+      // Perhatikan: Stream.value digunakan karena data yang dikembalikan bersifat sync dari data AsyncValue
       return Stream.value({'income': totalIncome, 'expense': totalExpense, 'net': totalIncome - totalExpense});
     },
-    loading: () => Stream.value({'income': 0.0, 'expense': 0.0, 'net': 0.0}), // Placeholder saat loading
-    error: (e, st) => Stream.value({'income': 0.0, 'expense': 0.0, 'net': 0.0}), // Placeholder saat error
+    loading: () => Stream.value({'income': 0.0, 'expense': 0.0, 'net': 0.0}),
+    error: (e, st) => Stream.value({'income': 0.0, 'expense': 0.0, 'net': 0.0}),
+  );
+});
+
+// Tambahkan provider untuk total balance Supabase
+// Ini akan menghitung total balance dari stream transaksi yang sudah ada
+final totalBalanceSupabaseProvider = StreamProvider<double>((ref) {
+  // Watch transactionsStreamProvider
+  return ref.watch(transactionsStreamProvider).when(
+    data: (transactions) {
+      double totalIncome = 0.0;
+      double totalExpense = 0.0;
+      for (var tr in transactions) {
+        if (tr.type == 'income') {
+          totalIncome += tr.amount;
+        } else if (tr.type == 'expense') {
+          totalExpense += tr.amount;
+        }
+      }
+      return Stream.value(totalIncome - totalExpense); // Return a stream with the calculated balance
+    },
+    loading: () => Stream.value(0.0), // Return a default value when loading
+    error: (err, stack) {
+      print('Error calculating total balance from transactions stream: $err');
+      return Stream.value(0.0); // Return a default value on error
+    },
   );
 });

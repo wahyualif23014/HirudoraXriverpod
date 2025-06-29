@@ -1,18 +1,20 @@
-// lib/features/finance/domain/repositories/finance_repository.dart
+// lib/finance/data/repositories/finance_repository.dart
 import '../../domain/entity/budget_entity.dart';
 import '../../domain/entity/transaction_entity.dart';
 
 abstract class FinanceRepository {
   // Budget Operations
-  Stream<List<BudgetEntity>> getBudgetsStream();
   Future<void> addBudget(BudgetEntity budget);
   Future<void> updateBudget(BudgetEntity budget);
   Future<void> deleteBudget(String id);
-  Future<void> updateBudgetSpent(String budgetId, double amountChange); // Untuk sinkronisasi transaksi
+  Stream<List<BudgetEntity>> getBudgetsStream();
+  Future<void> updateBudgetSpent(String budgetId, double amountChange);
+  Future<BudgetEntity?> getBudgetById(String id);
 
   // Transaction Operations
-  Stream<List<TransactionEntity>> getTransactionsStream();
   Future<void> addTransaction(TransactionEntity transaction);
   Future<void> updateTransaction(TransactionEntity transaction);
-  Future<void> deleteTransaction(String id, String budgetId, double amount, String transactionType);
+  Future<void> deleteTransaction(String transactionId, String budgetId, double amount, String transactionType); // Perlu info transaksi lama untuk update budget
+  Stream<List<TransactionEntity>> getTransactionsStream();
+  Future<TransactionEntity?> getTransactionById(String id);
 }

@@ -1,10 +1,14 @@
-// lib/features/finance/data/datasources/finance_remote_datasource.dart
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
-import '../models/budget_model.dart';
-import '../models/transaction_model.dart';
+// lib/finance/data/datasources/finance_remote_datasource.dart
+// Hapus import Firebase yang lama:
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_database/firebase_database.dart';
 
+// Tambahkan import Supabase
+import 'package:supabase_flutter/supabase_flutter.dart'; // <--- Tambahkan ini
+import '../models/budget_model.dart'; // Tetap
+import '../models/transaction_model.dart'; // Tetap
 
+// Interface abstract FinanceRemoteDataSource tetap sama
 abstract class FinanceRemoteDataSource {
   // Budget
   Stream<List<BudgetModel>> getBudgetsStream();
@@ -12,59 +16,45 @@ abstract class FinanceRemoteDataSource {
   Future<void> updateBudget(BudgetModel budget);
   Future<void> deleteBudget(String id);
   Future<void> updateBudgetSpent(String budgetId, double amountChange);
+  Future<BudgetModel?> getBudgetById(String id); // <--- Tambahkan ini untuk konsistensi
 
   // Transaction
   Stream<List<TransactionModel>> getTransactionsStream();
   Future<void> addTransaction(TransactionModel transaction);
   Future<void> updateTransaction(TransactionModel transaction);
   Future<void> deleteTransaction(String id); // Di sini hanya perlu ID untuk delete dari DB
+  Future<TransactionModel?> getTransactionById(String id); // <--- Tambahkan ini
 }
 
-class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
-  final FirebaseDatabase _database;
-  late final DatabaseReference _budgetsRef;
-  late final DatabaseReference _transactionsRef;
+// Implementasi menggunakan Supabase
+class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource { // <--- Ganti nama kelas implementasi
+  final SupabaseClient _supabase;
 
-  FinanceRemoteDataSourceImpl(this._database) {
-    // Sesuaikan path ini dengan struktur database Firebase Anda
-    // Disarankan menggunakan UID user untuk memisahkan data per user:
-    // _budgetsRef = _database.ref().child('users').child(FirebaseAuth.instance.currentUser!.uid).child('budgets');
-    // Untuk saat ini, kita akan menggunakan path generik.
-    _budgetsRef = _database.ref().child('budgets');
-    _transactionsRef = _database.ref().child('transactions');
-  }
+  FinanceSupabaseDataSourceImpl(this._supabase); // Konstruktor menerima SupabaseClient
 
   // --- Budget Implementations ---
   @override
   Stream<List<BudgetModel>> getBudgetsStream() {
-    return _budgetsRef.onValue.map((event) {
-      final List<BudgetModel> budgets = [];
-      final dynamic data = event.snapshot.value;
-
-      if (data != null && data is Map) {
-        data.forEach((key, value) {
-          try {
-            final budgetData = Map<String, dynamic>.from(value as Map);
-            budgets.add(BudgetModel.fromJson(budgetData, key)); // Kirim key sebagai ID
-          } catch (e, st) {
-            print('Error parsing budget with key $key: $e\n$st');
-          }
+    // Supabase Realtime Stream
+    return _supabase
+        .from('budgets') // Nama tabel di Supabase
+        .stream(primaryKey: ['id']) // Mendengarkan perubahan berdasarkan primary key
+        .map((List<Map<String, dynamic>> maps) {
+          return maps.map((map) => BudgetModel.fromJson(map)).toList();
+        }).handleError((error, stackTrace) {
+          print('Supabase Stream Error in getBudgetsStream: $error\n$stackTrace');
+          // Dalam kasus error, Anda mungkin ingin melemparkan kembali atau mengembalikan list kosong
+          throw Exception('Failed to load budgets stream: $error');
         });
-      }
-      return budgets;
-    }).handleError((error, stackTrace) {
-      print('Stream Error in getBudgetsStream: $error\n$stackTrace');
-      return [];
-    });
   }
 
   @override
   Future<void> addBudget(BudgetModel budget) async {
     try {
-      await _budgetsRef.push().set(budget.toJson());
-    } on FirebaseException catch (e, st) {
-      print('Firebase Error adding budget: ${e.message} (${e.code})\n$st');
-      rethrow;
+      await _supabase.from('budgets').insert(budget.toJson());
+    } on PostgrestException catch (e, st) {
+      print('Supabase Error adding budget: ${e.message} (Code: ${e.code})\n$st');
+      throw Exception('Failed to add budget: ${e.message}');
     } catch (e, st) {
       print('Unexpected Error adding budget: $e\n$st');
       rethrow;
@@ -74,13 +64,13 @@ class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
   @override
   Future<void> updateBudget(BudgetModel budget) async {
     try {
-      if (budget.id == null || budget.id!.isEmpty) {
-        throw ArgumentError("Budget ID cannot be null or empty for update operation.");
+      if (budget.id.isEmpty) { // Menggunakan budget.id langsung (String)
+        throw ArgumentError("Budget ID cannot be empty for update operation.");
       }
-      await _budgetsRef.child(budget.id!).update(budget.toJson());
-    } on FirebaseException catch (e, st) {
-      print('Firebase Error updating budget ${budget.id}: ${e.message} (${e.code})\n$st');
-      rethrow;
+      await _supabase.from('budgets').update(budget.toJson()).eq('id', budget.id);
+    } on PostgrestException catch (e, st) {
+      print('Supabase Error updating budget ${budget.id}: ${e.message} (Code: ${e.code})\n$st');
+      throw Exception('Failed to update budget: ${e.message}');
     } catch (e, st) {
       print('Unexpected Error updating budget ${budget.id}: $e\n$st');
       rethrow;
@@ -90,10 +80,10 @@ class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
   @override
   Future<void> deleteBudget(String id) async {
     try {
-      await _budgetsRef.child(id).remove();
-    } on FirebaseException catch (e, st) {
-      print('Firebase Error deleting budget $id: ${e.message} (${e.code})\n$st');
-      rethrow;
+      await _supabase.from('budgets').delete().eq('id', id);
+    } on PostgrestException catch (e, st) {
+      print('Supabase Error deleting budget $id: ${e.message} (Code: ${e.code})\n$st');
+      throw Exception('Failed to delete budget: ${e.message}');
     } catch (e, st) {
       print('Unexpected Error deleting budget $id: $e\n$st');
       rethrow;
@@ -103,52 +93,69 @@ class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
   @override
   Future<void> updateBudgetSpent(String budgetId, double amountChange) async {
     try {
-      await _budgetsRef.child(budgetId).runTransaction((currentData) {
-        final data = Map<String, dynamic>.from(currentData as Map? ?? {});
-        double currentSpent = (data['spent'] as num?)?.toDouble() ?? 0.0;
-        data['spent'] = currentSpent + amountChange;
-        return Transaction.success(data);
-      });
-    } on FirebaseException catch (e, st) {
-      print('Firebase Error updating budget spent for $budgetId: ${e.message} (${e.code})\n$st');
-      rethrow;
+      // Supabase tidak memiliki fitur 'runTransaction' seperti Firebase secara langsung untuk update angka.
+      // Kita perlu mengambil nilai saat ini, menghitung yang baru, lalu update.
+      // Ini bisa rentan terhadap race condition jika tidak ditangani dengan baik (misal: dengan database locks atau fungsi di Edge).
+      // Untuk tujuan awal, kita akan lakukan cara sederhana:
+      
+      final response = await _supabase.from('budgets').select('spent_amount').eq('id', budgetId).single();
+
+      if (response.isNotEmpty) {
+        double currentSpent = (response['spent_amount'] as num).toDouble();
+        double newSpent = currentSpent + amountChange;
+
+        await _supabase.from('budgets').update({'spent_amount': newSpent}).eq('id', budgetId);
+      } else {
+        throw Exception('Budget with ID $budgetId not found for spent update.');
+      }
+    } on PostgrestException catch (e, st) {
+      print('Supabase Error updating budget spent for $budgetId: ${e.message} (Code: ${e.code})\n$st');
+      throw Exception('Failed to update budget spent: ${e.message}');
     } catch (e, st) {
       print('Unexpected Error updating budget spent for $budgetId: $e\n$st');
       rethrow;
     }
   }
 
+  @override
+  Future<BudgetModel?> getBudgetById(String id) async {
+    try {
+      final response = await _supabase.from('budgets').select().eq('id', id).single();
+      if (response.isNotEmpty) {
+        return BudgetModel.fromJson(response);
+      }
+      return null;
+    } on PostgrestException catch (e, st) {
+      print('Supabase Error getting budget by ID $id: ${e.message} (Code: ${e.code})\n$st');
+      // Tidak melempar error karena null adalah hasil yang valid jika tidak ditemukan
+      return null;
+    } catch (e, st) {
+      print('Unexpected Error getting budget by ID $id: $e\n$st');
+      rethrow; // Lempar error tak terduga
+    }
+  }
+
   // --- Transaction Implementations ---
   @override
   Stream<List<TransactionModel>> getTransactionsStream() {
-    return _transactionsRef.onValue.map((event) {
-      final List<TransactionModel> transactions = [];
-      final dynamic data = event.snapshot.value;
-
-      if (data != null && data is Map) {
-        data.forEach((key, value) {
-          try {
-            final transactionData = Map<String, dynamic>.from(value as Map);
-            transactions.add(TransactionModel.fromJson(transactionData, key));
-          } catch (e, st) {
-            print('Error parsing transaction with key $key: $e\n$st');
-          }
+    return _supabase
+        .from('transactions') // Nama tabel di Supabase
+        .stream(primaryKey: ['id'])
+        .map((List<Map<String, dynamic>> maps) {
+          return maps.map((map) => TransactionModel.fromJson(map)).toList();
+        }).handleError((error, stackTrace) {
+          print('Supabase Stream Error in getTransactionsStream: $error\n$stackTrace');
+          throw Exception('Failed to load transactions stream: $error');
         });
-      }
-      return transactions;
-    }).handleError((error, stackTrace) {
-      print('Stream Error in getTransactionsStream: $error\n$stackTrace');
-      return [];
-    });
   }
 
   @override
   Future<void> addTransaction(TransactionModel transaction) async {
     try {
-      await _transactionsRef.push().set(transaction.toJson());
-    } on FirebaseException catch (e, st) {
-      print('Firebase Error adding transaction: ${e.message} (${e.code})\n$st');
-      rethrow;
+      await _supabase.from('transactions').insert(transaction.toJson());
+    } on PostgrestException catch (e, st) {
+      print('Supabase Error adding transaction: ${e.message} (Code: ${e.code})\n$st');
+      throw Exception('Failed to add transaction: ${e.message}');
     } catch (e, st) {
       print('Unexpected Error adding transaction: $e\n$st');
       rethrow;
@@ -158,13 +165,13 @@ class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
   @override
   Future<void> updateTransaction(TransactionModel transaction) async {
     try {
-      if (transaction.id == null || transaction.id!.isEmpty) {
-        throw ArgumentError("Transaction ID cannot be null or empty for update operation.");
+      if (transaction.id.isEmpty) {
+        throw ArgumentError("Transaction ID cannot be empty for update operation.");
       }
-      await _transactionsRef.child(transaction.id!).update(transaction.toJson());
-    } on FirebaseException catch (e, st) {
-      print('Firebase Error updating transaction ${transaction.id}: ${e.message} (${e.code})\n$st');
-      rethrow;
+      await _supabase.from('transactions').update(transaction.toJson()).eq('id', transaction.id);
+    } on PostgrestException catch (e, st) {
+      print('Supabase Error updating transaction ${transaction.id}: ${e.message} (Code: ${e.code})\n$st');
+      throw Exception('Failed to update transaction: ${e.message}');
     } catch (e, st) {
       print('Unexpected Error updating transaction ${transaction.id}: $e\n$st');
       rethrow;
@@ -174,12 +181,29 @@ class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
   @override
   Future<void> deleteTransaction(String id) async {
     try {
-      await _transactionsRef.child(id).remove();
-    } on FirebaseException catch (e, st) {
-      print('Firebase Error deleting transaction $id: ${e.message} (${e.code})\n$st');
-      rethrow;
+      await _supabase.from('transactions').delete().eq('id', id);
+    } on PostgrestException catch (e, st) {
+      print('Supabase Error deleting transaction $id: ${e.message} (Code: ${e.code})\n$st');
+      throw Exception('Failed to delete transaction: ${e.message}');
     } catch (e, st) {
       print('Unexpected Error deleting transaction $id: $e\n$st');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TransactionModel?> getTransactionById(String id) async {
+    try {
+      final response = await _supabase.from('transactions').select().eq('id', id).single();
+      if (response.isNotEmpty) {
+        return TransactionModel.fromJson(response);
+      }
+      return null;
+    } on PostgrestException catch (e, st) {
+      print('Supabase Error getting transaction by ID $id: ${e.message} (Code: ${e.code})\n$st');
+      return null;
+    } catch (e, st) {
+      print('Unexpected Error getting transaction by ID $id: $e\n$st');
       rethrow;
     }
   }

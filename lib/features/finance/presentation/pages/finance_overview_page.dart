@@ -6,12 +6,12 @@ import 'package:intl/intl.dart'; // Untuk format mata uang dan tanggal
 
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
-import '../../../../app/themes/colors.dart';     // <--- Perbaikan path impor
-import '../../../../app/themes/app_theme.dart'; // <--- Perbaikan path impor (mengganti app_theme.dart)
+import '../../../../app/themes/colors.dart';
+import '../../../../app/themes/app_theme.dart'; // Menggunakan AppTextStyles
 import '../../../../app/routes/routes.dart';
 
 import '../../domain/entity/transaction_entity.dart';
-import '../../data/providers/finance_providers.dart';
+import '../../data/providers/finance_providers.dart'; // Impor finance_providers Anda
 
 class FinanceOverviewPage extends ConsumerWidget {
   const FinanceOverviewPage({super.key});
@@ -32,13 +32,15 @@ class FinanceOverviewPage extends ConsumerWidget {
         },
         tooltip: 'Kembali ke Beranda',
       ),
-      // --- Akhir Perbaikan ---
       actions: [
         IconButton(
           icon: const Icon(Icons.bar_chart_rounded, color: AppColors.primaryText),
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Halaman Laporan Keuangan (Coming Soon)!')),
+              SnackBar(
+                content: Text('Halaman Laporan Keuangan (Coming Soon)!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
+                backgroundColor: AppColors.accentBlue, // Gunakan warna tema Anda
+              ),
             );
           },
         ),
@@ -67,7 +69,10 @@ class FinanceOverviewPage extends ConsumerWidget {
               TextButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Halaman Semua Transaksi (Coming Soon)!')),
+                    SnackBar(
+                      content: Text('Halaman Semua Transaksi (Coming Soon)!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
+                      backgroundColor: AppColors.accentBlue, // Gunakan warna tema Anda
+                    ),
                   );
                 },
                 child: Text(
@@ -91,7 +96,7 @@ class FinanceOverviewPage extends ConsumerWidget {
                 );
               }
               final latestTransactions = transactions..sort((a, b) => b.date.compareTo(a.date));
-              final displayTransactions = latestTransactions.take(5).toList(); 
+              final displayTransactions = latestTransactions.take(5).toList();
 
               return ListView.builder(
                 shrinkWrap: true,
@@ -99,23 +104,42 @@ class FinanceOverviewPage extends ConsumerWidget {
                 itemCount: displayTransactions.length,
                 itemBuilder: (context, index) {
                   final transaction = displayTransactions[index];
-                  return _TransactionListItem(
-                    transaction: transaction,
-                    onDelete: (id, budgetId, amount, type) async {
-                      final confirmed = await _showConfirmDeleteDialog(context);
-                      if (confirmed) {
-                        await ref.read(transactionNotifierProvider.notifier).deleteTransaction(id, budgetId, amount, type);
-                        if (ref.read(transactionNotifierProvider) is AsyncData) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: _TransactionListItem(
+                      transaction: transaction,
+                      onDelete: (id, budgetId, amount, type) async {
+                        if (id.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Transaksi dihapus!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.accentGreen),
+                            SnackBar(content: Text('ID Transaksi tidak valid untuk dihapus.', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
                           );
-                        } else if (ref.read(transactionNotifierProvider) is AsyncError) {
-                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Gagal menghapus: ${(ref.read(transactionNotifierProvider) as AsyncError).error}', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
+                          return;
+                        }
+
+                        final confirmed = await _showConfirmDeleteDialog(context);
+                        if (confirmed) {
+                          await ref.read(transactionNotifierProvider.notifier).deleteTransaction(id, budgetId, amount, type);
+                          
+                          // Menggunakan .when() untuk menangani state Notifier
+                          // Pastikan untuk membaca state Notifier SETELAH operasi async selesai
+                          // Ini akan dijalankan setelah Future dari deleteTransaction() selesai
+                          final stateAfterDelete = ref.read(transactionNotifierProvider);
+                          stateAfterDelete.when(
+                            data: (_) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Transaksi berhasil dihapus!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.accentGreen),
+                              );
+                            },
+                            loading: () { /* Tidak perlu UI loading di sini, sudah ada di if (transactionNotifierState.isLoading) */ },
+                            error: (error, stack) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Gagal menghapus: ${error.toString().split(':')[0]}', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
+                              );
+                            },
                           );
                         }
-                      }
-                    },
+                      },
+                    ),
                   );
                 },
               );
@@ -123,11 +147,12 @@ class FinanceOverviewPage extends ConsumerWidget {
             loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
             error: (error, stack) => Center(
               child: Text(
-                'Gagal memuat transaksi: $error',
+                'Gagal memuat transaksi: ${error.toString().split(':')[0]}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error),
               ),
             ),
           ),
+          // Indikator loading untuk operasi add/update/delete dari TransactionNotifier
           SizedBox(height: transactionNotifierState.isLoading ? 16 : 0),
           if (transactionNotifierState.isLoading)
             Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
@@ -136,6 +161,7 @@ class FinanceOverviewPage extends ConsumerWidget {
     );
   }
 
+  // Helper untuk Ringkasan Bulanan Card
   Widget _buildMonthlySummaryCard(BuildContext context, AsyncValue<Map<String, double>> monthlySummaryAsyncValue) {
     return GlassContainer(
       borderRadius: 20,
@@ -155,23 +181,24 @@ class FinanceOverviewPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Ringkasan Bulan Ini (${DateFormat('MMMM yyyy').format(DateTime.now())})',
+                'Ringkasan Bulan Ini (${DateFormat('MMMM yyyy').format(DateTime.now())})', // Format tanggal lebih lengkap
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText),
               ),
               const SizedBox(height: 10),
               _buildSummaryRow(context, 'Pemasukan', totalIncome, AppColors.accentGreen),
               _buildSummaryRow(context, 'Pengeluaran', totalExpense, AppColors.error),
-              const Divider(height: 20, color: AppColors.secondaryText),
+              const Divider(height: 20, color: AppColors.secondaryText), // Divider lebih tebal
               _buildSummaryRow(context, 'Saldo Bersih', netBalance, netBalance >= 0 ? AppColors.accentBlue : AppColors.error),
             ],
           );
         },
         loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
-        error: (error, stack) => Center(child: Text('Gagal memuat ringkasan: $error', style: TextStyle(color: AppColors.error))),
+        error: (error, stack) => Center(child: Text('Gagal memuat ringkasan: ${error.toString().split(':')[0]}', style: TextStyle(color: AppColors.error))),
       ),
     );
   }
 
+  // Helper untuk Summary Row
   Widget _buildSummaryRow(BuildContext context, String label, double amount, Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -191,35 +218,45 @@ class FinanceOverviewPage extends ConsumerWidget {
     );
   }
 
+  // Helper untuk Quick Finance Actions
   Widget _buildQuickFinanceActions(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildActionChip(
-          context,
-          icon: Icons.add_circle_rounded,
-          label: 'Tambah',
-          color: AppColors.accentBlue,
-          onTap: () => context.go(AppRoutes.addTransactionPath),
+        Expanded( // Bungkus dengan Expanded agar chip tersebar merata
+          child: _buildActionChip(
+            context,
+            icon: Icons.add_circle_rounded,
+            label: 'Tambah',
+            color: AppColors.accentBlue,
+            onTap: () => context.go(AppRoutes.addTransactionPath),
+          ),
         ),
-        _buildActionChip(
-          context,
-          icon: Icons.calendar_today_rounded,
-          label: 'Anggaran',
-          color: AppColors.accentPurple,
-          onTap: () => context.go(AppRoutes.budgetManagementPath),
+        const SizedBox(width: 12), // Jarak antar chip
+        Expanded(
+          child: _buildActionChip(
+            context,
+            icon: Icons.calendar_today_rounded,
+            label: 'Anggaran',
+            color: AppColors.accentPurple,
+            onTap: () => context.go(AppRoutes.budgetManagementPath),
+          ),
         ),
-        _buildActionChip(
-          context,
-          icon: Icons.military_tech_rounded,
-          label: 'Tujuan',
-          color: AppColors.accentGreen,
-          onTap: () => context.go(AppRoutes.financialGoalsPath),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildActionChip(
+            context,
+            icon: Icons.military_tech_rounded,
+            label: 'Tujuan',
+            color: AppColors.accentGreen,
+            onTap: () => context.go(AppRoutes.financialGoalsPath),
+          ),
         ),
       ],
     );
   }
 
+  // Helper untuk Action Chip
   Widget _buildActionChip(BuildContext context, {required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
@@ -236,18 +273,20 @@ class FinanceOverviewPage extends ConsumerWidget {
           children: [
             Icon(icon, color: color, size: 28),
             const SizedBox(height: 4),
-            Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppColors.primaryText)),
+            Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppColors.primaryText), textAlign: TextAlign.center), // Pastikan teks di tengah
           ],
         ),
       ),
     );
   }
 
+  // Helper untuk Konfirmasi Dialog Delete
   Future<bool> _showConfirmDeleteDialog(BuildContext context) async {
     return await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.secondaryBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Hapus Transaksi?', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText)),
         content: Text('Apakah Anda yakin ingin menghapus transaksi ini?', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText)),
         actions: [
@@ -262,10 +301,11 @@ class FinanceOverviewPage extends ConsumerWidget {
           ),
         ],
       ),
-    ) ?? false;
+    ) ?? false; // Mengembalikan false jika dialog ditutup tanpa memilih
   }
 }
 
+// Widget terpisah untuk menampilkan item transaksi
 class _TransactionListItem extends StatelessWidget {
   final TransactionEntity transaction;
   final Function(String id, String budgetId, double amount, String type) onDelete;
@@ -283,7 +323,6 @@ class _TransactionListItem extends StatelessWidget {
 
     return GlassContainer(
       borderRadius: 15,
-      // margin: const EdgeInsets.symmetric(vertical: 8.0),
       padding: const EdgeInsets.all(16.0),
       linearGradientColors: [
         (isExpense ? AppColors.error : AppColors.accentGreen).withOpacity(0.05),
@@ -306,12 +345,12 @@ class _TransactionListItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  transaction.description,
+                  transaction.description ?? 'Tanpa Deskripsi',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.primaryText),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  DateFormat('dd MMM yyyy').format(transaction.date), // Perbaiki format tanggal
+                  DateFormat('dd MMM yyyy').format(transaction.date), // Format tanggal lebih spesifik dengan tahun
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.tertiaryText),
                 ),
               ],
@@ -333,7 +372,7 @@ class _TransactionListItem extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(Icons.delete_rounded, color: AppColors.tertiaryText.withOpacity(0.7)),
-            onPressed: () => onDelete(transaction.id!, transaction.budgetId, transaction.amount, transaction.type),
+            onPressed: () => onDelete(transaction.id, transaction.budgetId, transaction.amount, transaction.type),
             tooltip: 'Hapus Transaksi',
           ),
         ],

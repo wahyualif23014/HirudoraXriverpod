@@ -18,7 +18,7 @@ dependencies:
   riverpod_annotation: ^2.3.5 # Versi stabil terbaru
 
   # --- Firebase Core & Services ---
-  firebase_core: ^3.2.0      # Versi stabil terbaru
+  firebase_core: ^3.14.0      # Versi stabil terbaru
   firebase_database: ^11.0.0 # Versi stabil terbaru
   firebase_auth: ^5.1.0      # Versi stabil terbaru
   firebase_analytics: ^11.5.0 # Versi stabil terbaru
@@ -57,6 +57,8 @@ dependencies:
   iconsax: ^0.0.8
 
   google_fonts: ^6.2.1
+  firebase_performance: ^0.10.1+7
+  supabase_flutter: ^2.9.1
 
 dev_dependencies:
   flutter_test:

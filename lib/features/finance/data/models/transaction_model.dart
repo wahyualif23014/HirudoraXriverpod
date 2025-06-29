@@ -1,44 +1,56 @@
-// lib/features/finance/data/models/transaction_model.dart
-import '../../../finance/domain/entity/transaction_entity.dart'; // Impor entity dari domain
+// lib/finance/data/models/transaction_model.dart
+import '../../domain/entity/transaction_entity.dart';
 
 class TransactionModel extends TransactionEntity {
   const TransactionModel({
     super.id,
-    required super.budgetId,
-    required super.description,
+    super.userId,
     required super.amount,
-    required super.date,
     required super.type,
+    super.description,
+    required super.date,
+    super.budgetId,
   });
 
-  factory TransactionModel.fromJson(Map<String, dynamic> json, String id) {
+  factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
-      id: id, // ID diambil dari key Firebase
-      budgetId: json['budgetId'] as String,
-      description: json['description'] as String,
+      id: json['id'] as String,
+      userId: json['user_id'] as String?,
       amount: (json['amount'] as num).toDouble(),
-      date: DateTime.parse(json['date'] as String), // Konversi String ISO 8601 ke DateTime
       type: json['type'] as String,
+      description: json['description'] as String?,
+      date: DateTime.parse(json['created_at'] as String),
+      budgetId: json['budget_id'] as String? ?? '',
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'budgetId': budgetId,
-        'description': description,
-        'amount': amount,
-        'date': date.toIso8601String(), // Konversi DateTime ke String ISO 8601
-        'type': type,
-      };
+  // Tambahkan metode ini
+  TransactionEntity toEntity() {
+    return TransactionEntity(
+      id: id,
+      userId: userId,
+      amount: amount,
+      type: type,
+      description: description,
+      date: date,
+      budgetId: budgetId,
+    );
+  }
 
-  // Konversi dari Entity ke Model (digunakan saat mengirim data ke database)
+  @override
+  Map<String, dynamic> toJson() {
+    return super.toJson();
+  }
+
   factory TransactionModel.fromEntity(TransactionEntity entity) {
     return TransactionModel(
       id: entity.id,
-      budgetId: entity.budgetId,
-      description: entity.description,
+      userId: entity.userId,
       amount: entity.amount,
-      date: entity.date,
       type: entity.type,
+      description: entity.description,
+      date: entity.date,
+      budgetId: entity.budgetId,
     );
   }
 }

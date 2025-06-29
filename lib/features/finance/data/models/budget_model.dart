@@ -1,36 +1,60 @@
-// lib/features/finance/data/models/budget_model.dart
-import '../../domain/entity/budget_entity.dart'; // Impor entity dari domain
+// lib/finance/data/models/budget_model.dart
+import '../../domain/entity/budget_entity.dart';
 
 class BudgetModel extends BudgetEntity {
   const BudgetModel({
     super.id,
+    super.userId,
+    required super.name,
+    required super.allocatedAmount,
+    super.spentAmount,
+    required super.startDate,
+    required super.endDate,
     required super.category,
-    required super.limit,
-    required super.spent,
   });
 
-  factory BudgetModel.fromJson(Map<String, dynamic> json, String id) {
+  factory BudgetModel.fromJson(Map<String, dynamic> json) {
     return BudgetModel(
-      id: id, // ID diambil dari key Firebase
+      id: json['id'] as String,
+      userId: json['user_id'] as String?,
+      name: json['name'] as String,
+      allocatedAmount: (json['allocated_amount'] as num).toDouble(),
+      spentAmount: (json['spent_amount'] as num).toDouble(),
+      startDate: DateTime.parse(json['start_date'] as String),
+      endDate: DateTime.parse(json['end_date'] as String),
       category: json['category'] as String,
-      limit: (json['limit'] as num).toDouble(),
-      spent: (json['spent'] as num).toDouble(),
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'category': category,
-        'limit': limit,
-        'spent': spent,
-      };
+  // Tambahkan metode ini
+  BudgetEntity toEntity() {
+    return BudgetEntity(
+      id: id,
+      userId: userId,
+      name: name,
+      allocatedAmount: allocatedAmount,
+      spentAmount: spentAmount,
+      startDate: startDate,
+      endDate: endDate,
+      category: category,
+    );
+  }
 
-  // Konversi dari Entity ke Model (digunakan saat mengirim data ke database)
+  @override
+  Map<String, dynamic> toJson() {
+    return super.toJson();
+  }
+
   factory BudgetModel.fromEntity(BudgetEntity entity) {
     return BudgetModel(
       id: entity.id,
+      userId: entity.userId,
+      name: entity.name,
+      allocatedAmount: entity.allocatedAmount,
+      spentAmount: entity.spentAmount,
+      startDate: entity.startDate,
+      endDate: entity.endDate,
       category: entity.category,
-      limit: entity.limit,
-      spent: entity.spent,
     );
   }
 }

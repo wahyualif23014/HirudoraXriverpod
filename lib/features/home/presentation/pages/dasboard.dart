@@ -2,13 +2,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hirudorax/features/finance/data/providers/finance_providers.dart';
+import 'package:intl/intl.dart'; // Tambahkan untuk format mata uang
 
-import '../../../../core/widgets/app_scaffold.dart'; 
-import '../../../../core/widgets/glass_container.dart'; 
-import '../../../../app/themes/colors.dart'; 
-import '../../../../app/routes/routes.dart'; 
+import '../../../../core/widgets/app_scaffold.dart';
+import '../../../../core/widgets/glass_container.dart';
+import '../../../../app/themes/colors.dart';
+import '../../../../app/routes/routes.dart';
+// Import provider keuangan dari finance feature
 
-final totalBalanceProvider = StateProvider<double>((ref) => 1250000.0); 
+
 final recentActivityProvider = StateProvider<String>((ref) => '2 new activities logged today');
 final nextHabitProvider = StateProvider<String>((ref) => 'Workout - 30 mins');
 
@@ -17,19 +20,18 @@ class DashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final double totalBalance = ref.watch(totalBalanceProvider);
+    // Watch totalBalanceSupabaseProvider yang menghitung dari transaksi Supabase
+    final totalBalanceAsyncValue = ref.watch(totalBalanceSupabaseProvider); // <--- Perubahan di sini
     final String recentActivity = ref.watch(recentActivityProvider);
     final String nextHabit = ref.watch(nextHabitProvider);
 
     return AppScaffold(
       title: 'Hi, Hirudorax!',
-      // Anda bisa menambahkan actions seperti tombol profil atau notifikasi
       actions: [
         IconButton(
           icon: const Icon(Icons.notifications_rounded, color: AppColors.primaryText),
           onPressed: () {
-            // Arahkan ke halaman notifikasi atau buka dialog
-            context.go(AppRoutes.notificationSettingsPath); // Contoh navigasi
+            context.go(AppRoutes.notificationSettingsPath);
           },
         ),
       ],
@@ -54,11 +56,22 @@ class DashboardPage extends ConsumerWidget {
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.secondaryText),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  'Rp ${totalBalance.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: AppColors.primaryText,
-                    fontWeight: FontWeight.bold,
+                // Gunakan totalBalanceAsyncValue.when untuk menampilkan data atau status loading/error
+                totalBalanceAsyncValue.when( // <--- Perubahan di sini
+                  data: (balance) => Text(
+                    'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(balance)}', // Format mata uang
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          color: AppColors.primaryText,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  loading: () => Center(child: CircularProgressIndicator(color: AppColors.primaryText)), // Indikator loading
+                  error: (error, stack) => Text(
+                    'Error: ${error.toString().split(':')[0]}', // Sederhanakan pesan error
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -71,7 +84,7 @@ class DashboardPage extends ConsumerWidget {
                     icon: const Icon(Icons.account_balance_wallet_rounded),
                     label: const Text('View Finance'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accentBlue.withOpacity(0.8), // Tombol dengan warna semangat
+                      backgroundColor: AppColors.accentBlue.withOpacity(0.8),
                       foregroundColor: AppColors.primaryText,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -93,7 +106,7 @@ class DashboardPage extends ConsumerWidget {
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(), // Nonaktifkan scroll GridView
+            physics: const NeverScrollableScrollPhysics(),
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
             children: [
@@ -102,7 +115,24 @@ class DashboardPage extends ConsumerWidget {
                 icon: Icons.add_rounded,
                 label: 'Add Transaction',
                 color: AppColors.accentGreen,
-                onTap: () => context.go(AppRoutes.addTransactionPath),
+                onTap: () {
+                  // Contoh: Menambah transaksi saat tombol ditekan (opsional, karena ada halaman terpisah)
+                  // Jika Anda ingin langsung menambah dari sini tanpa navigasi:
+                  // final transactionNotifier = ref.read(transactionNotifierProvider.notifier);
+                  // transactionNotifier.addTransaction(
+                  //   TransactionEntity(
+                  //     amount: 100000,
+                  //     type: 'expense',
+                  //     description: 'Pembelian Cepat',
+                  //     date: DateTime.now(),
+                  //   ),
+                  // );
+                  // Navigator.of(context).pop(); // Tutup modal jika ada
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   SnackBar(content: Text('Transaksi ditambahkan!')),
+                  // );
+                  context.go(AppRoutes.addTransactionPath); // Ini navigasi asli Anda
+                },
               ),
               _buildQuickActionButton(
                 context,
@@ -161,7 +191,6 @@ class DashboardPage extends ConsumerWidget {
             iconColor: AppColors.accentGreen,
             onTap: () => context.go(AppRoutes.financialGoalsPath),
           ),
-          // Tambahkan lebih banyak kartu pemantauan sesuai kebutuhan Anda
         ],
       ),
     );
@@ -244,9 +273,9 @@ class DashboardPage extends ConsumerWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.primaryText,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: AppColors.primaryText,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 4),
                   Text(

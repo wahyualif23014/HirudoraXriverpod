@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart'; // Jika ingin pakai glassmorphism
 import '../../../../app/themes/colors.dart';
-import '../../../../app/themes/app_theme.dart';
 import '../../../../app/routes/routes.dart'; // Untuk navigasi GoRouter
 
 class ActivitiesPage extends ConsumerWidget {
