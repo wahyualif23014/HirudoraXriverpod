@@ -7,15 +7,8 @@ import '../../domain/entity/budget_entity.dart'; // Sudah benar
 import '../../domain/entity/transaction_entity.dart'; // Sudah benar
 import '../../data/repositories/finance_repository.dart'; // Sudah benar (interface)
 
-// Import Data Layer (Datasource & Repository Implementation)
-import '../../data/datasources/finance_remote_datasource.dart'; // Ini interface FinanceRemoteDataSource
-// Anda perlu mengimpor implementasi konkret dari Supabase
-import '../../data/datasources/finance_supabase_datasource.dart'; // <--- Perbaikan import
+import '../../data/datasources/finance_remote_datasource.dart'; 
 import '../../data/repositories/finance_repository_impl.dart'; // Sudah benar
-
-// Hapus import yang tidak perlu atau duplikat
-// import '../datasources/finance_supabase_datasource.dart'; // Hapus ini jika di atas sudah benar
-// import '../../../finance/data/datasources/finance_supabase_datasource.dart'; // Hapus ini jika di atas sudah benar
 
 // --- Dependency Providers (Lapisan terbawah, diakses oleh Notifier) ---
 
@@ -25,7 +18,6 @@ final financeRemoteDataSourceProvider = Provider<FinanceRemoteDataSource>((ref) 
   return FinanceSupabaseDataSourceImpl(Supabase.instance.client);
 });
 
-// Provider untuk Repository (implementasi dari interface domain)
 final financeRepositoryProvider = Provider<FinanceRepository>((ref) {
   final remoteDataSource = ref.read(financeRemoteDataSourceProvider);
   return FinanceRepositoryImpl(remoteDataSource);
@@ -34,7 +26,6 @@ final financeRepositoryProvider = Provider<FinanceRepository>((ref) {
 
 // --- State Providers (ViewModels untuk UI) ---
 
-// StreamProvider untuk mendapatkan daftar budget secara real-time ke UI
 final budgetsStreamProvider = StreamProvider<List<BudgetEntity>>((ref) {
   // Langsung memanggil metode dari Repository
   return ref.read(financeRepositoryProvider).getBudgetsStream();
