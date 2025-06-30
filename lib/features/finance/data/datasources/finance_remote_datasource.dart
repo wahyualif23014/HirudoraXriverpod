@@ -37,8 +37,8 @@ class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource { // <---
   Stream<List<BudgetModel>> getBudgetsStream() {
     // Supabase Realtime Stream
     return _supabase
-        .from('budgets') // Nama tabel di Supabase
-        .stream(primaryKey: ['id']) // Mendengarkan perubahan berdasarkan primary key
+        .from('budgets') 
+        .stream(primaryKey: ['id']) 
         .map((List<Map<String, dynamic>> maps) {
           return maps.map((map) => BudgetModel.fromJson(map)).toList();
         }).handleError((error, stackTrace) {
@@ -63,7 +63,7 @@ class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource { // <---
   @override
   Future<void> updateBudget(BudgetModel budget) async {
     try {
-      if (budget.id.isEmpty) { // Menggunakan budget.id langsung (String)
+      if (budget.id.isEmpty) { 
         throw ArgumentError("Budget ID cannot be empty for update operation.");
       }
       await _supabase.from('budgets').update(budget.toJson()).eq('id', budget.id);
@@ -123,7 +123,6 @@ class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource { // <---
       return null;
     } on PostgrestException catch (e, st) {
       print('Supabase Error getting budget by ID $id: ${e.message} (Code: ${e.code})\n$st');
-      // Tidak melempar error karena null adalah hasil yang valid jika tidak ditemukan
       return null;
     } catch (e, st) {
       print('Unexpected Error getting budget by ID $id: $e\n$st');
