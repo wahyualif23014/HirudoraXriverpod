@@ -2,6 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hirudorax/features/activities/presentation/pages/activity_detail_page.dart';
+import 'package:hirudorax/features/activities/presentation/pages/activity_list_page.dart';
+import 'package:hirudorax/features/activities/presentation/pages/add_activity_page.dart';
 
 // --- Impor halaman-halaman Anda yang akan digunakan ---
 // PASTIKAN SEMUA IMPOR INI SUDAH BENAR PATH-NYA DAN FILENYA ADA
@@ -9,7 +12,7 @@ import 'package:go_router/go_router.dart';
 // yang mengembalikan Scaffold dengan Text sebagai placeholder.
 
 // Halaman Dashboard/Home
-import '../../features/home/presentation/pages/dasboard.dart'; 
+import '../../features/home/presentation/pages/dasboard.dart';
 
 // Halaman Fitur Finance
 import '../../features/finance/presentation/pages/finance_overview_page.dart';
@@ -22,9 +25,9 @@ import '../../features/activities/presentation/pages/activities_page.dart';
 // import '../../features/activities/presentation/pages/activity_detail_page.dart';
 
 // Halaman Fitur Habits (DI-UNCOMMENT)
-import '../../features/habits/presentation/page/habits_page.dart'; 
-// import '../../features/habits/presentation/pages/add_habit_page.dart'; 
-// import '../../features/habits/presentation/pages/habit_detail_page.dart'; 
+import '../../features/habits/presentation/page/habits_page.dart';
+// import '../../features/habits/presentation/pages/add_habit_page.dart';
+// import '../../features/habits/presentation/pages/habit_detail_page.dart';
 
 // Halaman Fitur Goals (Placeholder)
 // import '../../features/goals/presentation/pages/goals_page.dart';
@@ -32,7 +35,7 @@ import '../../features/habits/presentation/page/habits_page.dart';
 // import '../../features/goals/presentation/pages/goal_detail_page.dart';
 
 // Halaman Fitur Settings (DI-UNCOMMENT)
-// import '../../features/settings/presentation/pages/settings_page.dart'; 
+// import '../../features/settings/presentation/pages/settings_page.dart';
 
 // Impor definisi rute
 import 'routes.dart';
@@ -40,11 +43,11 @@ import 'routes.dart';
 // --- Provider untuk GoRouter ---
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoutes.homePath, // Aplikasi akan LANGSUNG ke halaman Home/Dashboard
-    
+    initialLocation:
+        AppRoutes.homePath, // Aplikasi akan LANGSUNG ke halaman Home/Dashboard
+
     // Logika pengalihan (redirect) tetap DITONAKTIFKAN SEMENTARA
     // redirect: (BuildContext context, GoRouterState state) { /* ... */ },
-    
     routes: <GoRoute>[
       // --- Main Application Routes ---
       GoRoute(
@@ -59,7 +62,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'add-transaction', // Nested: /finance/add-transaction
-            builder: (context, state) => const AddTransactionPage(), // <--- Pastikan nama class sudah benar
+            builder:
+                (context, state) =>
+                    const AddTransactionPage(), // <--- Pastikan nama class sudah benar
           ),
           GoRoute(
             path: 'budgets', // Nested: /finance/budgets
@@ -67,25 +72,36 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: 'goals', // Nested: /finance/goals (Financial Goals)
-            builder: (context, state) => const Text('Financial Goals Page (Coming Soon)'),
+            builder:
+                (context, state) =>
+                    const Text('Financial Goals Page (Coming Soon)'),
           ),
         ],
       ),
 
       // --- Activities Feature Routes (DI-UNCOMMENT SELURUH BLOK INI) ---
+      // --- Activities Feature Routes ---
       GoRoute(
-        path: AppRoutes.activitiesHubPath, // Hub utama Activities
-        builder: (context, state) => const ActivitiesPage(), // <--- DI-UNCOMMENT
+        path: AppRoutes.activitiesHubPath, // /activities
+        builder:
+            (context, state) =>
+                const ActivitiesPage(), // Mengarahkan langsung ke daftar
         routes: [
           GoRoute(
             path: 'add', // Nested: /activities/add
-            builder: (context, state) => const Text('Add Activity Page (Coming Soon)'), // Placeholder OK
+            builder:
+                (context, state) =>
+                    const AddActivityPage(), // Menggunakan halaman tambah
           ),
           GoRoute(
             path: ':id', // Nested: /activities/:id
             builder: (context, state) {
               final activityId = state.pathParameters['id'];
-              return Text('Activity Detail Page for ID: $activityId'); // Placeholder OK
+              // Pastikan activityId tidak null, atau tangani kasus null.
+              // GoRouter menjamin pathParameters akan ada jika rute cocok.
+              return ActivityDetailPage(
+                activityId: activityId!,
+              ); // Menggunakan halaman detail
             },
           ),
         ],
@@ -98,13 +114,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'add', // Nested: /habits/add
-            builder: (context, state) => const Text('Add Habit Page (Coming Soon)'), // Placeholder OK
+            builder:
+                (context, state) => const Text(
+                  'Add Habit Page (Coming Soon)',
+                ), // Placeholder OK
           ),
           GoRoute(
             path: ':id', // Nested: /habits/:id
             builder: (context, state) {
               final habitId = state.pathParameters['id'];
-              return Text('Habit Detail Page for ID: $habitId'); // Placeholder OK
+              return Text(
+                'Habit Detail Page for ID: $habitId',
+              ); // Placeholder OK
             },
           ),
         ],
@@ -113,11 +134,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // --- Goals Feature Routes (Ini sudah OK) ---
       GoRoute(
         path: AppRoutes.goalsHubPath, // Hub utama Goals
-        builder: (context, state) => const Text('Goals Hub Page (Coming Soon)'), 
+        builder: (context, state) => const Text('Goals Hub Page (Coming Soon)'),
         routes: [
           GoRoute(
             path: 'add', // Nested: /goals/add
-            builder: (context, state) => const Text('Add Goal Page (Coming Soon)'),
+            builder:
+                (context, state) => const Text('Add Goal Page (Coming Soon)'),
           ),
           GoRoute(
             path: ':id', // Nested: /goals/:id
@@ -130,21 +152,22 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
 
       // --- Settings Feature Routes (DI-UNCOMMENT SELURUH BLOK INI) ---
-    //   GoRoute(
-    //     path: AppRoutes.settingsPath,
-    //     builder: (context, state) => const SettingsPage(), // <--- DI-UNCOMMENT
-    //     routes: [
-    //       GoRoute(
-    //         path: 'notifications', // Nested: /settings/notifications
-    //         builder: (context, state) => const Text('Notification Settings Page (Coming Soon)'), // Placeholder OK
-    //       ),
-    //     ],
-    //   ),
+      //   GoRoute(
+      //     path: AppRoutes.settingsPath,
+      //     builder: (context, state) => const SettingsPage(), // <--- DI-UNCOMMENT
+      //     routes: [
+      //       GoRoute(
+      //         path: 'notifications', // Nested: /settings/notifications
+      //         builder: (context, state) => const Text('Notification Settings Page (Coming Soon)'), // Placeholder OK
+      //       ),
+      //     ],
+      //   ),
     ],
-    
-    errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(title: const Text('Error')),
-      body: Center(child: Text('Halaman tidak ditemukan: ${state.error}')),
-    ),
+
+    errorBuilder:
+        (context, state) => Scaffold(
+          appBar: AppBar(title: const Text('Error')),
+          body: Center(child: Text('Halaman tidak ditemukan: ${state.error}')),
+        ),
   );
 });

@@ -1,63 +1,86 @@
-// File: lib/features/activities/data/models/activity_model.dart
+// lib/features/activities/data/models/activity_model.dart
 
-import '../../domain/entity/activity_entity.dart'; // Import entity yang relevan
+import '../../domain/entity/activity_entity.dart'; // Import ActivityEntity
 
-class ActivityModel extends Activity {
-  final String id;
-  final String name;
-  final String description;
-  final DateTime date;
-  final String status; 
-
-  ActivityModel({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.date,
-    required this.status,
-  }) : super(          // Memanggil constructor dari parent class (Activity entity)
-           id: id,
-           name: name,
-           description: description,
-           date: date,
-           status: status,
-         );
+class ActivityModel extends ActivityEntity {
+  const ActivityModel({
+    required super.id,
+    required super.title,
+    super.description,
+    required super.createdAt,
+    required super.updatedAt,
+    super.isCompleted,
+    super.priority,
+    super.tags,
+    super.dueDate,
+  });
 
   factory ActivityModel.fromJson(Map<String, dynamic> json) {
     return ActivityModel(
       id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String,
-      date: DateTime.parse(json['date'] as String), // Sesuaikan format tanggal
-      status: json['status'] as String,
+      title: json['title'] as String,
+      description: (json['description'] ?? '') as String, // Handle null
+      createdAt: DateTime.parse(json['created_at'] as String), // Kolom Supabase
+      updatedAt: DateTime.parse(json['updated_at'] as String), // Kolom Supabase
+      isCompleted: (json['is_completed'] ?? false) as bool, // Kolom Supabase
+      priority: (json['priority'] ?? 3) as int,          // Kolom Supabase
+      tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [], // Handle null/type
+      dueDate: json['due_date'] != null ? DateTime.parse(json['due_date'] as String) : null, // Handle null
     );
   }
 
-  // Method untuk mengubah instance ke JSON (misalnya untuk dikirim ke API)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
+      'title': title,
       'description': description,
-      'date': date.toIso8601String(), // Sesuaikan format tanggal
-      'status': status,
+      'created_at': createdAt.toIso8601String(), // Format tanggal untuk Supabase
+      'updated_at': updatedAt.toIso8601String(), // Format tanggal untuk Supabase
+      'is_completed': isCompleted,
+      'priority': priority,
+      'tags': tags,
+      'due_date': dueDate?.toIso8601String(), // Format tanggal untuk Supabase, handle null
     };
   }
 
-  // Optional: CopyWith method untuk immutability
+  // Optional: copyWith method agar konsisten dengan entity, berguna saat update
+  @override
   ActivityModel copyWith({
     String? id,
-    String? name,
+    String? title,
     String? description,
-    DateTime? date,
-    String? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isCompleted,
+    int? priority,
+    List<String>? tags,
+    DateTime? dueDate,
   }) {
     return ActivityModel(
       id: id ?? this.id,
-      name: name ?? this.name,
+      title: title ?? this.title,
       description: description ?? this.description,
-      date: date ?? this.date,
-      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isCompleted: isCompleted ?? this.isCompleted,
+      priority: priority ?? this.priority,
+      tags: tags ?? this.tags,
+      dueDate: dueDate ?? this.dueDate,
+    );
+  }
+
+  // Optional: Konversi dari Entity ke Model jika diperlukan (misalnya saat add/update dari UI)
+  factory ActivityModel.fromEntity(ActivityEntity entity) {
+    return ActivityModel(
+      id: entity.id,
+      title: entity.title,
+      description: entity.description,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+      isCompleted: entity.isCompleted,
+      priority: entity.priority,
+      tags: entity.tags,
+      dueDate: entity.dueDate,
     );
   }
 }

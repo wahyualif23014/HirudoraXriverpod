@@ -1,12 +1,16 @@
 // lib/features/activities/presentation/pages/activities_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_scaffold.dart';
-import '../../../../core/widgets/glass_container.dart'; // Jika ingin pakai glassmorphism
+import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
-import '../../../../app/routes/routes.dart'; // Untuk navigasi GoRouter
+import '../../../../app/routes/routes.dart';
+
+// Import ActivityListPage
+import 'activity_list_page.dart'; // Sesuaikan path jika berbeda
 
 class ActivitiesPage extends ConsumerWidget {
   const ActivitiesPage({super.key});
@@ -43,7 +47,7 @@ class ActivitiesPage extends ConsumerWidget {
                   const SizedBox(height: 10),
                   ElevatedButton.icon(
                     onPressed: () {
-                      context.go(AppRoutes.addActivityPath); // Navigasi ke halaman tambah aktivitas
+                      context.go(AppRoutes.addActivityPath);
                     },
                     icon: const Icon(Icons.add_rounded),
                     label: const Text('Tambah Aktivitas Baru'),
@@ -55,15 +59,9 @@ class ActivitiesPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Di sini nanti akan tampil daftar aktivitas dari provider
+            // Mengganti placeholder dengan ActivityListPage
             Expanded(
-              child: Center(
-                child: Text(
-                  'Daftar Aktivitas Akan Tampil Di Sini',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.tertiaryText),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              child: ActivityListPage(), // <--- INI PENTING
             ),
           ],
         ),

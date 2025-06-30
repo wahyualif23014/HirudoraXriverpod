@@ -1,26 +1,43 @@
 // lib/features/dashboard/presentation/pages/dashboard_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hirudorax/features/finance/data/providers/finance_providers.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
 
+// Import utama untuk theming, routes, dan custom widgets Anda
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
 import '../../../../app/routes/routes.dart';
 
+// Import providers dari fitur finance (untuk totalBalance)
+import 'package:hirudorax/features/finance/data/providers/finance_providers.dart';
 
-final recentActivityProvider = StateProvider<String>((ref) => '2 new activities logged today');
+// Import providers dari fitur activities (untuk ringkasan aktivitas)
+// Pastikan path ini benar sesuai struktur file Anda:
+// lib/features/activities/data/providers/activity_providers.dart
+import '../../../activities/data/provider/activity_providers.dart';
+
+
+// Ini tetap bisa digunakan jika Anda ingin placeholder untuk Next Habit
 final nextHabitProvider = StateProvider<String>((ref) => 'Workout - 30 mins');
+
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final totalBalanceAsyncValue = ref.watch(totalBalanceSupabaseProvider); // <--- Perubahan di sini
-    final String recentActivity = ref.watch(recentActivityProvider);
+    // 1. Watch totalBalanceAsyncValue dari provider finance
+    final totalBalanceAsyncValue = ref.watch(totalBalanceSupabaseProvider);
+
+    // 2. Watch recentActivityAsyncValue dari provider activities
+    //    Ini akan mengembalikan AsyncValue<String> karena recentActivitySummaryProvider adalah FutureProvider
+    final recentActivityAsyncValue = ref.watch(recentActivitySummaryProvider);
+
+
+    // 3. Watch provider untuk Next Habit (contoh statis)
     final String nextHabit = ref.watch(nextHabitProvider);
 
     return AppScaffold(
@@ -55,7 +72,8 @@ class DashboardPage extends ConsumerWidget {
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.secondaryText),
                 ),
                 const SizedBox(height: 8),
-                totalBalanceAsyncValue.when( // <--- Perubahan di sini
+                // Menggunakan .when() untuk menangani state loading, data, dan error dari AsyncValue
+                totalBalanceAsyncValue.when(
                   data: (balance) => Text(
                     'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(balance)}', // Format mata uang
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
@@ -114,22 +132,7 @@ class DashboardPage extends ConsumerWidget {
                 label: 'Add Transaction',
                 color: AppColors.accentGreen,
                 onTap: () {
-                  // Contoh: Menambah transaksi saat tombol ditekan (opsional, karena ada halaman terpisah)
-                  // Jika Anda ingin langsung menambah dari sini tanpa navigasi:
-                  // final transactionNotifier = ref.read(transactionNotifierProvider.notifier);
-                  // transactionNotifier.addTransaction(
-                  //   TransactionEntity(
-                  //     amount: 100000,
-                  //     type: 'expense',
-                  //     description: 'Pembelian Cepat',
-                  //     date: DateTime.now(),
-                  //   ),
-                  // );
-                  // Navigator.of(context).pop(); // Tutup modal jika ada
-                  // ScaffoldMessenger.of(context).showSnackBar(
-                  //   SnackBar(content: Text('Transaksi ditambahkan!')),
-                  // );
-                  context.go(AppRoutes.addTransactionPath); 
+                  context.go(AppRoutes.addTransactionPath);
                 },
               ),
               _buildQuickActionButton(
@@ -163,13 +166,32 @@ class DashboardPage extends ConsumerWidget {
             style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText),
           ),
           const SizedBox(height: 16),
-          _buildFeatureOverviewCard(
-            context,
-            title: 'Activities Progress',
-            subtitle: recentActivity,
-            icon: Icons.run_circle_rounded,
-            iconColor: AppColors.accentOrange,
-            onTap: () => context.go(AppRoutes.activitiesHubPath),
+          // Menggunakan .when() untuk menampilkan ringkasan aktivitas
+          recentActivityAsyncValue.when(
+            data: (recentActivityText) => _buildFeatureOverviewCard(
+              context,
+              title: 'Activities Progress',
+              subtitle: recentActivityText, // Menggunakan data dari provider
+              icon: Icons.run_circle_rounded,
+              iconColor: AppColors.accentOrange,
+              onTap: () => context.go(AppRoutes.activitiesHubPath),
+            ),
+            loading: () => _buildFeatureOverviewCard(
+              context,
+              title: 'Activities Progress',
+              subtitle: 'Loading activity summary...',
+              icon: Icons.run_circle_rounded,
+              iconColor: AppColors.accentOrange,
+              onTap: () => context.go(AppRoutes.activitiesHubPath),
+            ),
+            error: (error, stack) => _buildFeatureOverviewCard(
+              context,
+              title: 'Activities Progress',
+              subtitle: 'Error loading activities: ${error.toString().split(':')[0]}', // Sederhanakan pesan error
+              icon: Icons.run_circle_rounded,
+              iconColor: AppColors.accentOrange,
+              onTap: () => context.go(AppRoutes.activitiesHubPath),
+            ),
           ),
           const SizedBox(height: 16),
           _buildFeatureOverviewCard(

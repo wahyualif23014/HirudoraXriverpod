@@ -1,123 +1,69 @@
-// lib/features/activities/data/provider/activity_remote_data_source.dart
+  // lib/features/activities/data/providers/activity_providers.dart
+  // Ini adalah file INDUK yang akan di-generate oleh build_runner
 
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/activity_model.dart'; // Import ActivityModel
+  import 'package:flutter_riverpod/flutter_riverpod.dart';
+  import 'package:hirudorax/features/activities/data/repositories/activity_repository.dart';
+  import 'package:riverpod_annotation/riverpod_annotation.dart';
+  import 'package:supabase_flutter/supabase_flutter.dart';
 
-abstract class ActivityRemoteDataSource {
-  Future<List<ActivityModel>> getActivities();
-  Future<ActivityModel> getActivityById(String id);
-  Future<ActivityModel> addActivity(ActivityModel activity);
-  Future<ActivityModel> updateActivity(ActivityModel activity);
-  Future<void> deleteActivity(String id);
-}
+  // Pastikan import-import ini benar sesuai lokasi Anda
+  import '../datasources/activity_remote_datasource.dart'; // Interface
+  import '../datasources/activity_supabase_datasource.dart'; // Implementasi
+  import '../repositories/activity_repository_impl.dart';
+  // Penting untuk ActivityEntity
 
-class ActivityRemoteDataSourceImpl implements ActivityRemoteDataSource {
-  final SupabaseClient supabaseClient; // Inject SupabaseClient
+  // Ini adalah baris PART yang benar untuk file INDUK
+  part 'activity_providers.g.dart'; // <<< PASTIKAN INI ADA DAN BENAR
 
-  ActivityRemoteDataSourceImpl(this.supabaseClient);
-
-  @override
-  Future<List<ActivityModel>> getActivities() async {
-    try {
-      final response = await supabaseClient
-          .from('activities') // Nama tabel di Supabase
-          .select()
-          .order('date', ascending: false); // Contoh: urutkan berdasarkan tanggal
-
-      if (response == null) {
-        throw Exception('No data received from Supabase');
-      }
-
-      // Pastikan response adalah List<Map<String, dynamic>>
-      if (response is! List) {
-        throw Exception('Invalid response format from Supabase');
-      }
-
-      return (response as List)
-          .map((json) => ActivityModel.fromJson(json as Map<String, dynamic>))
-          .toList();
-    } on PostgrestException catch (e) {
-      throw Exception('Supabase error: ${e.message}');
-    } catch (e) {
-      throw Exception('Failed to get activities: $e');
-    }
+  // Provider untuk SupabaseClient
+  @Riverpod(keepAlive: true)
+  SupabaseClient supabaseClient(SupabaseClientRef ref) { // Gunakan SupabaseClientRef atau Ref (Ref lebih modern)
+    return Supabase.instance.client;
   }
 
-  @override
-  Future<ActivityModel> getActivityById(String id) async {
-    try {
-      final response = await supabaseClient
-          .from('activities')
-          .select()
-          .eq('id', id)
-          .single(); // Ambil satu record
-
-      if (response == null) {
-        throw Exception('Activity not found');
-      }
-
-      return ActivityModel.fromJson(response as Map<String, dynamic>);
-    } on PostgrestException catch (e) {
-      throw Exception('Supabase error: ${e.message}');
-    } catch (e) {
-      throw Exception('Failed to get activity by ID: $e');
-    }
+  // Provider untuk ActivityRemoteDataSource (interface)
+  @Riverpod(keepAlive: true)
+  ActivityRemoteDataSource activityRemoteDataSource(ActivityRemoteDataSourceRef ref) {
+    return ActivitySupabaseDataSourceImpl(ref.watch(supabaseClientProvider));
   }
 
-  @override
-  Future<ActivityModel> addActivity(ActivityModel activity) async {
-    try {
-      final response = await supabaseClient
-          .from('activities')
-          .insert(activity.toJson()) // Menggunakan toJson dari ActivityModel
-          .select()
-          .single();
-
-      if (response == null) {
-        throw Exception('Failed to add activity');
-      }
-
-      return ActivityModel.fromJson(response as Map<String, dynamic>);
-    } on PostgrestException catch (e) {
-      throw Exception('Supabase error: ${e.message}');
-    } catch (e) {
-      throw Exception('Failed to add activity: $e');
-    }
+  // Provider untuk ActivityRepository (interface dari domain layer)
+  @Riverpod(keepAlive: true)
+  ActivityRepository activityRepository(ActivityRepositoryRef ref) {
+    return ActivityRepositoryImpl(remoteDataSource: ref.watch(activityRemoteDataSourceProvider));
   }
 
-  @override
-  Future<ActivityModel> updateActivity(ActivityModel activity) async {
-    try {
-      final response = await supabaseClient
-          .from('activities')
-          .update(activity.toJson()) // Menggunakan toJson
-          .eq('id', activity.id)
-          .select()
-          .single();
+  // Provider untuk ringkasan aktivitas terbaru (untuk Dashboard)
+  @Riverpod(keepAlive: true)
+  Future<String> recentActivitySummary(Ref ref) async { // Atau FutureProviderRef
+    final activityRepository = ref.watch(activityRepositoryProvider);
 
-      if (response == null) {
-        throw Exception('Failed to update activity');
-      }
+    final result = await activityRepository.getActivities();
 
-      return ActivityModel.fromJson(response as Map<String, dynamic>);
-    } on PostgrestException catch (e) {
-      throw Exception('Supabase error: ${e.message}');
-    } catch (e) {
-      throw Exception('Failed to update activity: $e');
-    }
+    return result.fold(
+      (failure) {
+        print('Error fetching recent activities for summary: $failure');
+        return 'Failed to load activity summary.';
+      },
+      (activities) {
+        if (activities.isEmpty) {
+          return 'No activities logged yet.';
+        }
+
+        final today = DateTime.now();
+        final recentActivities = activities.where((activity) {
+          return activity.createdAt.year == today.year &&
+                activity.createdAt.month == today.month &&
+                activity.createdAt.day == today.day;
+        }).toList();
+
+        if (recentActivities.isEmpty) {
+          return 'No activities logged today.';
+        } else if (recentActivities.length == 1) {
+          return '1 new activity logged today.';
+        } else {
+          return '${recentActivities.length} new activities logged today.';
+        }
+      },
+    );
   }
-
-  @override
-  Future<void> deleteActivity(String id) async {
-    try {
-      await supabaseClient
-          .from('activities')
-          .delete()
-          .eq('id', id);
-    } on PostgrestException catch (e) {
-      throw Exception('Supabase error: ${e.message}');
-    } catch (e) {
-      throw Exception('Failed to delete activity: $e');
-    }
-  }
-}
