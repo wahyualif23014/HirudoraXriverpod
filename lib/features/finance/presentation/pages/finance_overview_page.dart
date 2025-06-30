@@ -31,7 +31,7 @@ class FinanceOverviewPage extends ConsumerWidget {
     }
 
     return AppScaffold(
-      const SizedBox(height: 15),
+      const SizedBox(height: 10),
       title: '',
       appBarColor: AppColors.primaryBackground,
       leading: IconButton(
@@ -55,7 +55,7 @@ class FinanceOverviewPage extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 60),
+          const SizedBox(height: 55),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Align(
@@ -93,12 +93,12 @@ class FinanceOverviewPage extends ConsumerWidget {
             loading: () => const Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
             error: (error, stack) => Text('Gagal memuat saldo', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error)),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
 
 
           // 2. Aksi Cepat
           _buildQuickFinanceActions(context),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
 
           // 3. Header Transaksi Terbaru
           Padding(
@@ -127,7 +127,7 @@ class FinanceOverviewPage extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 5),
 
           // 4. Daftar Transaksi
           Expanded(
