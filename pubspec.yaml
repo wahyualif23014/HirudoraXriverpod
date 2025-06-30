@@ -33,7 +33,7 @@ dependencies:
   flutter_staggered_animations: ^1.1.1
 
   # --- Navigation ---
-  go_router: ^14.0.0 # Versi stabil terbaru, kompatibel dengan Riverpod
+  go_router: ^14.0.0 
 
   # --- Local Storage ---
   shared_preferences: ^2.2.3
