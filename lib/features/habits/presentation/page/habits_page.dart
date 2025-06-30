@@ -14,6 +14,7 @@ class HabitsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AppScaffold(
+      const SizedBox(height: 15),
       title: 'Kebiasaan Saya',
       body: Padding(
         padding: const EdgeInsets.all(16.0),

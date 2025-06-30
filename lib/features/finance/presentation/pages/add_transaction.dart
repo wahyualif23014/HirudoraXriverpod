@@ -258,6 +258,7 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
     }
 
     return AppScaffold(
+      const SizedBox(height: 20),
       title: widget.editingTransaction == null ? 'Tambah Transaksi Baru' : 'Edit Transaksi',
       body: Padding(
         padding: const EdgeInsets.all(24.0),

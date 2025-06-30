@@ -1,15 +1,15 @@
 // lib/features/finance/presentation/pages/budget_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart'; // Untuk format mata uang
+import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
 import '../../../../app/themes/app_theme.dart'; // Menggunakan AppTextStyles
 
-import '../../domain/entity/budget_entity.dart'; // Impor BudgetEntity
-import '../../data/providers/finance_providers.dart'; // Impor finance_providers
+import '../../domain/entity/budget_entity.dart';
+import '../../data/providers/finance_providers.dart'; // Pastikan ini mengimpor budgetNotifierProvider dan budgetsStreamProvider
 
 class BudgetPage extends ConsumerStatefulWidget {
   const BudgetPage({super.key});
@@ -22,7 +22,8 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
-  final TextEditingController _allocatedAmountController = TextEditingController();
+  final TextEditingController _allocatedAmountController =
+      TextEditingController();
 
   DateTime? _startDate;
   DateTime? _endDate;
@@ -39,13 +40,16 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
 
   // Fungsi untuk menampilkan form tambah/edit budget (modal bottom sheet)
   void _showBudgetForm({BudgetEntity? budget}) {
+    // Reset form state dan controllers
+    _formKey.currentState?.reset(); // Reset validator state
     setState(() {
       _editingBudget = budget;
       if (budget != null) {
         _nameController.text = budget.name;
         _categoryController.text = budget.category;
-        // Gunakan NumberFormat untuk memformat angka saat mengisi form untuk diedit
-        _allocatedAmountController.text = NumberFormat.decimalPattern('id_ID').format(budget.allocatedAmount);
+        _allocatedAmountController.text = NumberFormat.decimalPattern(
+          'id_ID',
+        ).format(budget.allocatedAmount);
         _startDate = budget.startDate;
         _endDate = budget.endDate;
       } else {
@@ -67,27 +71,30 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
           child: GlassContainer(
-            borderRadius: 30, 
+            borderRadius: 30,
             blur: 20,
             opacity: 0.2,
             linearGradientColors: [
               AppColors.glassBackgroundStart.withOpacity(0.3),
               AppColors.glassBackgroundEnd.withOpacity(0.2),
             ],
-            customBorder: Border.all(color: AppColors.glassBackgroundStart.withOpacity(0.3), width: 1.5),
-            child: SingleChildScrollView( // Tambahkan SingleChildScrollView agar konten bisa digulir
+            customBorder: Border.all(
+              color: AppColors.glassBackgroundStart.withOpacity(0.3),
+              width: 1.5,
+            ),
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Form(
                 key: _formKey,
                 child: Column(
-                  mainAxisSize: MainAxisSize.min, // Penting agar Column tidak mengambil ruang lebih
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       budget == null ? 'Tambah Anggaran Baru' : 'Edit Anggaran',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.primaryText),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(color: AppColors.primaryText),
                     ),
                     const SizedBox(height: 20),
-                    // TextFormField: Nama Anggaran
                     _buildTextFormField(
                       controller: _nameController,
                       labelText: 'Nama Anggaran (ex: Anggaran Bulanan)',
@@ -98,8 +105,7 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 15), // Spasi antar TextFormField
-                    // TextFormField: Kategori
+                    const SizedBox(height: 15),
                     _buildTextFormField(
                       controller: _categoryController,
                       labelText: 'Kategori (ex: Makanan, Transportasi)',
@@ -110,8 +116,7 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 15), // Spasi antar TextFormField
-                    // TextFormField: Jumlah Anggaran
+                    const SizedBox(height: 15),
                     _buildTextFormField(
                       controller: _allocatedAmountController,
                       labelText: 'Jumlah Anggaran (Rp)',
@@ -120,9 +125,10 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                         if (value == null || value.isEmpty) {
                           return 'Jumlah anggaran tidak boleh kosong';
                         }
-                        // Gunakan NumberFormat untuk parsing angka yang mungkin memiliki format lokal
                         try {
-                          final parsed = NumberFormat.decimalPattern('id_ID').parse(value);
+                          final parsed = NumberFormat.decimalPattern(
+                            'id_ID',
+                          ).parse(value);
                           if (parsed <= 0) {
                             return 'Masukkan jumlah yang valid (lebih dari 0)';
                           }
@@ -132,83 +138,97 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 15), // Spasi antar TextFormField
-                    // Input Tanggal Mulai
-                    _buildDatePickerField(
-                      context,
-                      label: 'Tanggal Mulai',
-                      selectedDate: _startDate,
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: _startDate ?? DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2101),
-                          builder: (context, child) {
-                            return Theme( // Terapkan tema untuk DatePicker
-                              data: Theme.of(context).copyWith(
-                                colorScheme: ColorScheme.light(
-                                  primary: AppColors.accentBlue, // Warna header DatePicker
-                                  onPrimary: AppColors.primaryText, // Warna teks di header
-                                  surface: AppColors.secondaryBackground, // Background DatePicker
-                                  onSurface: AppColors.primaryText, // Warna teks tanggal
-                                ),
-                                textButtonTheme: TextButtonThemeData(
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: AppColors.accentBlue, // Warna tombol (OK, Cancel)
-                                  ),
-                                ),
-                              ),
-                              child: child!,
-                            );
-                          },
+                    const SizedBox(height: 15),
+                    StatefulBuilder(
+                      builder: (
+                        BuildContext context,
+                        StateSetter setStateModal,
+                      ) {
+                        return Column(
+                          children: [
+                            _buildDatePickerField(
+                              context,
+                              label: 'Tanggal Mulai',
+                              selectedDate: _startDate,
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: _startDate ?? DateTime.now(),
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2101),
+                                  builder: (context, child) {
+                                    return Theme(
+                                      data: Theme.of(context).copyWith(
+                                        colorScheme: ColorScheme.light(
+                                          primary: AppColors.accentBlue,
+                                          onPrimary: AppColors.primaryText,
+                                          surface:
+                                              AppColors.secondaryBackground,
+                                          onSurface: AppColors.primaryText,
+                                        ),
+                                        textButtonTheme: TextButtonThemeData(
+                                          style: TextButton.styleFrom(
+                                            foregroundColor:
+                                                AppColors.accentBlue,
+                                          ),
+                                        ),
+                                      ),
+                                      child: child!,
+                                    );
+                                  },
+                                );
+                                if (picked != null) {
+                                  setStateModal(() {
+                                    _startDate = picked;
+                                  });
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 15),
+                            _buildDatePickerField(
+                              context,
+                              label: 'Tanggal Akhir',
+                              selectedDate: _endDate,
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate:
+                                      _endDate ?? _startDate ?? DateTime.now(),
+                                  firstDate: _startDate ?? DateTime(2000),
+                                  lastDate: DateTime(2101),
+                                  builder: (context, child) {
+                                    return Theme(
+                                      data: Theme.of(context).copyWith(
+                                        colorScheme: ColorScheme.light(
+                                          primary: AppColors.accentBlue,
+                                          onPrimary: AppColors.primaryText,
+                                          surface:
+                                              AppColors.secondaryBackground,
+                                          onSurface: AppColors.primaryText,
+                                        ),
+                                        textButtonTheme: TextButtonThemeData(
+                                          style: TextButton.styleFrom(
+                                            foregroundColor:
+                                                AppColors.accentBlue,
+                                          ),
+                                        ),
+                                      ),
+                                      child: child!,
+                                    );
+                                  },
+                                );
+                                if (picked != null) {
+                                  setStateModal(() {
+                                    _endDate = picked;
+                                  });
+                                }
+                              },
+                            ),
+                          ],
                         );
-                        if (picked != null) { // && picked != _startDate
-                          setState(() {
-                            _startDate = picked;
-                          });
-                        }
                       },
                     ),
-                    const SizedBox(height: 15), // Spasi antar TextFormField
-                    // Input Tanggal Akhir
-                    _buildDatePickerField(
-                      context,
-                      label: 'Tanggal Akhir',
-                      selectedDate: _endDate,
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: _endDate ?? _startDate ?? DateTime.now(),
-                          firstDate: _startDate ?? DateTime(2000), // Tidak boleh sebelum tanggal mulai
-                          lastDate: DateTime(2101),
-                          builder: (context, child) { // Terapkan tema untuk DatePicker
-                            return Theme(
-                              data: Theme.of(context).copyWith(
-                                colorScheme: ColorScheme.light(
-                                  primary: AppColors.accentBlue,
-                                  onPrimary: AppColors.primaryText,
-                                  surface: AppColors.secondaryBackground,
-                                  onSurface: AppColors.primaryText,
-                                ),
-                                textButtonTheme: TextButtonThemeData(
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: AppColors.accentBlue,
-                                  ),
-                                ),
-                              ),
-                              child: child!,
-                            );
-                          },
-                        );
-                        if (picked != null) { // && picked != _endDate
-                          setState(() {
-                            _endDate = picked;
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 20), // Spasi sebelum tombol
+                    const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -216,14 +236,23 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                           child: ElevatedButton(
                             onPressed: () => Navigator.pop(context),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.secondaryBackground.withOpacity(0.8),
+                              backgroundColor: AppColors.secondaryBackground
+                                  .withOpacity(0.8),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
-                                side: BorderSide(color: AppColors.primaryText.withOpacity(0.2)),
+                                side: BorderSide(
+                                  color: AppColors.primaryText.withOpacity(0.2),
+                                ),
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
-                            child: const Text('Batal', style: TextStyle(color: AppColors.primaryText, fontSize: 16)),
+                            child: const Text(
+                              'Batal',
+                              style: TextStyle(
+                                color: AppColors.primaryText,
+                                fontSize: 16,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 15),
@@ -231,22 +260,48 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                           child: ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
-                                // Validasi tambahan untuk tanggal (sudah ada, pertahankan)
                                 if (_startDate == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Tanggal Mulai tidak boleh kosong', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
+                                    SnackBar(
+                                      content: Text(
+                                        'Tanggal Mulai tidak boleh kosong',
+                                        style: AppTextStyles.bodyMedium
+                                            .copyWith(
+                                              color: AppColors.primaryText,
+                                            ),
+                                      ),
+                                      backgroundColor: AppColors.error,
+                                    ),
                                   );
                                   return;
                                 }
                                 if (_endDate == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Tanggal Akhir tidak boleh kosong', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
+                                    SnackBar(
+                                      content: Text(
+                                        'Tanggal Akhir tidak boleh kosong',
+                                        style: AppTextStyles.bodyMedium
+                                            .copyWith(
+                                              color: AppColors.primaryText,
+                                            ),
+                                      ),
+                                      backgroundColor: AppColors.error,
+                                    ),
                                   );
                                   return;
                                 }
                                 if (_endDate!.isBefore(_startDate!)) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Tanggal Akhir tidak boleh sebelum Tanggal Mulai', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
+                                    SnackBar(
+                                      content: Text(
+                                        'Tanggal Akhir tidak boleh sebelum Tanggal Mulai',
+                                        style: AppTextStyles.bodyMedium
+                                            .copyWith(
+                                              color: AppColors.primaryText,
+                                            ),
+                                      ),
+                                      backgroundColor: AppColors.error,
+                                    ),
                                   );
                                   return;
                                 }
@@ -254,16 +309,23 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.accentBlue.withOpacity(0.7),
+                              backgroundColor: AppColors.accentBlue.withOpacity(
+                                0.7,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
-                                side: BorderSide(color: AppColors.primaryText.withOpacity(0.2)),
+                                side: BorderSide(
+                                  color: AppColors.primaryText.withOpacity(0.2),
+                                ),
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             child: Text(
                               budget == null ? 'Tambah' : 'Simpan',
-                              style: const TextStyle(color: AppColors.primaryText, fontSize: 16),
+                              style: const TextStyle(
+                                color: AppColors.primaryText,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                         ),
@@ -285,35 +347,61 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     required String labelText,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
+    void Function(String)? onChanged,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(color: AppColors.primaryText), // Warna teks input
+      style: const TextStyle(color: AppColors.primaryText),
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText), // Warna label
-        hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.tertiaryText),
-        enabledBorder: OutlineInputBorder( // Border saat tidak aktif
+        labelStyle: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
+        hintStyle: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(color: AppColors.tertiaryText),
+        enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.tertiaryText.withOpacity(0.5), width: 1),
+          borderSide: BorderSide(
+            color: AppColors.tertiaryText.withOpacity(0.5),
+            width: 1,
+          ),
         ),
-        focusedBorder: OutlineInputBorder( // Border saat fokus
+        focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.accentBlue, width: 2), // Warna saat fokus
+          borderSide: const BorderSide(color: AppColors.accentBlue, width: 2),
         ),
-        errorBorder: OutlineInputBorder( // Border saat error
+        errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
-        focusedErrorBorder: OutlineInputBorder( // Border saat error dan fokus
+        focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
         filled: true,
-        fillColor: AppColors.secondaryBackground.withOpacity(0.3), // Warna background input field
+        fillColor: AppColors.secondaryBackground.withOpacity(0.3),
       ),
       validator: validator,
+      onChanged: (value) {
+        if (keyboardType == TextInputType.number) {
+          final cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
+          if (cleanValue.isNotEmpty) {
+            final number = double.parse(cleanValue);
+            final formatted = NumberFormat.decimalPattern(
+              'id_ID',
+            ).format(number);
+            controller.value = TextEditingValue(
+              text: formatted,
+              selection: TextSelection.collapsed(offset: formatted.length),
+            );
+          } else {
+            controller.value = TextEditingValue.empty;
+          }
+        }
+        onChanged?.call(value);
+      },
     );
   }
 
@@ -325,22 +413,33 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     required VoidCallback onTap,
   }) {
     return TextFormField(
-      readOnly: true, // Tidak bisa diketik langsung
+      readOnly: true,
       controller: TextEditingController(
-        text: selectedDate == null ? '' : DateFormat('dd/MM/yyyy').format(selectedDate),
+        text:
+            selectedDate == null
+                ? ''
+                : DateFormat('dd/MM/yyyy').format(selectedDate),
       ),
       style: const TextStyle(color: AppColors.primaryText),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
-        suffixIcon: const Icon(Icons.calendar_today, color: AppColors.secondaryText), // Icon kalender
+        labelStyle: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
+        suffixIcon: const Icon(
+          Icons.calendar_today,
+          color: AppColors.secondaryText,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.tertiaryText.withOpacity(0.5), width: 1),
+          borderSide: BorderSide(
+            color: AppColors.tertiaryText.withOpacity(0.5),
+            width: 1,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.accentBlue, width: 2),
+          borderSide: const BorderSide(color: AppColors.accentBlue, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -363,133 +462,206 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     );
   }
 
-
   // Fungsi untuk menyimpan budget (tambah atau update)
   void _saveBudget() async {
     final budgetNotifier = ref.read(budgetNotifierProvider.notifier);
-    
-    // Pastikan _startDate dan _endDate tidak null (sudah divalidasi sebelumnya, ini sebagai fallback)
+
     if (_startDate == null || _endDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tanggal mulai dan akhir harus dipilih.', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(
+            'Tanggal mulai dan akhir harus dipilih.',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.primaryText,
+            ),
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    // Parsing allocatedAmount dengan benar
+    double parsedAllocatedAmount;
+    try {
+      parsedAllocatedAmount =
+          NumberFormat.decimalPattern(
+            'id_ID',
+          ).parse(_allocatedAmountController.text).toDouble();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Format jumlah anggaran tidak valid.',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.primaryText,
+            ),
+          ),
+          backgroundColor: AppColors.error,
+        ),
       );
       return;
     }
 
     final BudgetEntity budgetToSave;
     if (_editingBudget == null) {
-      // Tambah baru
       budgetToSave = BudgetEntity(
         name: _nameController.text,
         category: _categoryController.text,
-        // Pastikan parsing menggunakan NumberFormat untuk input angka
-        allocatedAmount: NumberFormat.decimalPattern('id_ID').parse(_allocatedAmountController.text).toDouble(),
+        allocatedAmount: parsedAllocatedAmount,
         startDate: _startDate!,
         endDate: _endDate!,
-        spentAmount: 0.0, // Default untuk budget baru
+        spentAmount: 0.0,
       );
       await budgetNotifier.addBudget(budgetToSave);
     } else {
-      // Edit yang sudah ada
       budgetToSave = _editingBudget!.copyWith(
         name: _nameController.text,
         category: _categoryController.text,
-        // Pastikan parsing menggunakan NumberFormat untuk input angka
-        allocatedAmount: NumberFormat.decimalPattern('id_ID').parse(_allocatedAmountController.text).toDouble(),
+        allocatedAmount: parsedAllocatedAmount,
         startDate: _startDate,
         endDate: _endDate,
-        // spentAmount tidak diubah dari UI di sini, akan diubah oleh transaksi
       );
       await budgetNotifier.updateBudget(budgetToSave);
     }
 
-    if (mounted) {
-      final budgetActionState = ref.read(budgetNotifierProvider);
-      budgetActionState.when(
+    // Menggunakan listen untuk FutureProvider atau StateNotifier saat ada action
+    // Ini lebih baik daripada membaca state setelah await, karena state mungkin berubah.
+    ref.listenManual(budgetNotifierProvider, (previous, next) {
+      next.whenOrNull(
         data: (_) {
-          Navigator.pop(context); // Tutup bottom sheet
+          // Pastikan modal sheet masih terbuka sebelum pop
+          if (Navigator.of(context).canPop()) {
+            Navigator.pop(context); // Tutup bottom sheet
+          }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                _editingBudget == null ? 'Anggaran berhasil ditambahkan!' : 'Anggaran berhasil diperbarui!',
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText),
+                _editingBudget == null
+                    ? 'Anggaran berhasil ditambahkan!'
+                    : 'Anggaran berhasil diperbarui!',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.primaryText,
+                ),
               ),
               backgroundColor: AppColors.accentGreen,
             ),
           );
+          // Set _editingBudget menjadi null setelah operasi berhasil untuk memastikan form siap untuk tambah baru
+          setState(() {
+            _editingBudget = null;
+          });
+          // *** Kunci utama: Invalidate provider agar data diperbarui dari Supabase ***
+          ref.invalidate(budgetsStreamProvider);
         },
-        loading: () { }, // Tidak perlu UI loading di sini karena sudah ada di FAB
         error: (error, stack) {
-          Navigator.pop(context); // Tutup bottom sheet jika error dan ingin menampilkan SnackBar
+          if (Navigator.of(context).canPop()) {
+            Navigator.pop(
+              context,
+            ); // Tutup bottom sheet jika error dan ingin menampilkan SnackBar
+          }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
                 'Gagal menyimpan anggaran: ${error.toString().split(':')[0]}',
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.primaryText,
+                ),
               ),
               backgroundColor: AppColors.error,
             ),
           );
         },
       );
-    }
+    });
   }
 
   // Fungsi untuk menghapus budget
   void _deleteBudget(String id) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.secondaryBackground,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Hapus Anggaran?', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText)),
-        content: Text(
-          'Yakin ingin menghapus anggaran ini? Ini tidak akan menghapus transaksi terkait.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(foregroundColor: AppColors.secondaryText),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final budgetNotifier = ref.read(budgetNotifierProvider.notifier);
-              await budgetNotifier.deleteBudget(id);
-              if (mounted) {
-                final budgetActionState = ref.read(budgetNotifierProvider);
-                budgetActionState.when(
-                  data: (_) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Anggaran berhasil dihapus!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
-                        backgroundColor: AppColors.accentGreen,
-                      ),
-                    );
-                    Navigator.pop(context); // Tutup dialog
-                  },
-                  loading: () {}, // Tidak perlu UI loading
-                  error: (error, stack) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Gagal menghapus anggaran: ${error.toString().split(':')[0]}', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
-                        backgroundColor: AppColors.error,
-                      ),
-                    );
-                    Navigator.pop(context); // Tutup dialog
-                  },
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error.withOpacity(0.8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: AppColors.secondaryBackground,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text('Hapus', style: TextStyle(color: AppColors.primaryText)),
+            title: Text(
+              'Hapus Anggaran?',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(color: AppColors.primaryText),
+            ),
+            content: Text(
+              'Yakin ingin menghapus anggaran ini? Ini tidak akan menghapus transaksi terkait.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.secondaryText,
+                ),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final budgetNotifier = ref.read(
+                    budgetNotifierProvider.notifier,
+                  );
+                  await budgetNotifier.deleteBudget(id);
+                  if (mounted) {
+                    ref.listenManual(budgetNotifierProvider, (previous, next) {
+                      next.whenOrNull(
+                        data: (_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Anggaran berhasil dihapus!',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.primaryText,
+                                ),
+                              ),
+                              backgroundColor: AppColors.accentGreen,
+                            ),
+                          );
+                          Navigator.pop(context); // Tutup dialog
+                          // *** Kunci utama: Invalidate provider agar data diperbarui dari Supabase ***
+                          ref.invalidate(budgetsStreamProvider);
+                        },
+                        error: (error, stack) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Gagal menghapus anggaran: ${error.toString().split(':')[0]}',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.primaryText,
+                                ),
+                              ),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                          Navigator.pop(context); // Tutup dialog
+                        },
+                      );
+                    });
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.error.withOpacity(0.8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Hapus',
+                  style: TextStyle(color: AppColors.primaryText),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -499,90 +671,138 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     final budgetActionState = ref.watch(budgetNotifierProvider);
 
     return AppScaffold(
-      title: 'Manajemen Anggaran', // Judul AppBar
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- Ringkasan Anggaran Bulan Ini ---
-            _buildBudgetSummaryCard(budgetsAsyncValue),
-            const SizedBox(height: 30),
-
-            // --- Judul Kategori Anggaran ---
-            Text(
-              'Kategori Anggaran',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.primaryText),
+      const SizedBox(height: 20),
+      title: 'Manajemen Anggaran',
+      body: CustomScrollView(
+        slivers: [
+          // Ringkasan Anggaran sebagai SliverToBoxAdapter dengan padding
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 20.0,
             ),
-            const SizedBox(height: 15),
-
-            // --- Daftar Kategori Anggaran (Real-time dari Supabase) ---
-            Expanded(
-              child: budgetsAsyncValue.when(
-                data: (budgets) {
-                  if (budgets.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'Belum ada anggaran. Tambahkan yang pertama!',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  }
-                  return ListView.builder(
-                    itemCount: budgets.length,
-                    itemBuilder: (context, index) {
-                      final budget = budgets[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12.0),
-                        child: _BudgetCategoryItem(
-                          budget: budget,
-                          onEdit: () => _showBudgetForm(budget: budget),
-                          onDelete: () => _deleteBudget(budget.id),
-                        ),
-                      );
-                    },
-                  );
-                },
-                loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
-                error: (error, stack) => Center(
-                  child: Text(
-                    'Gagal memuat anggaran: ${error.toString().split(':')[0]}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error),
-                  ),
+            sliver: SliverToBoxAdapter(
+              child: _buildBudgetSummaryCard(budgetsAsyncValue),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 15.0),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                'Kategori Anggaran',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: AppColors.primaryText,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          budgetsAsyncValue.when(
+            data: (budgets) {
+              if (budgets.isEmpty) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Text(
+                      'Belum ada anggaran. Tambahkan yang pertama!',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.secondaryText,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+              return SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final budget = budgets[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 12.0,
+                      left: 16.0,
+                      right: 16.0,
+                    ),
+                    child: _BudgetCategoryItem(
+                      budget: budget,
+                      onEdit: () => _showBudgetForm(budget: budget),
+                      onDelete: () => _deleteBudget(budget.id),
+                    ),
+                  );
+                }, childCount: budgets.length),
+              );
+            },
+            loading:
+                () => SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.accentBlue,
+                    ),
+                  ),
+                ),
+            error:
+                (error, stack) => SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Text(
+                      'Gagal memuat anggaran: ${error.toString().split(':')[0]}',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: AppColors.error),
+                    ),
+                  ),
+                ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: budgetActionState.isLoading ? null : () => _showBudgetForm(),
         backgroundColor: AppColors.accentBlue.withOpacity(0.8),
-        child: budgetActionState.isLoading
-            ? CircularProgressIndicator(color: AppColors.primaryText)
-            : const Icon(Icons.add_rounded, color: AppColors.primaryText, size: 30),
+        child:
+            budgetActionState.isLoading
+                ? CircularProgressIndicator(color: AppColors.primaryText)
+                : const Icon(
+                  Icons.add_rounded,
+                  color: AppColors.primaryText,
+                  size: 30,
+                ),
         tooltip: 'Tambah Anggaran Baru',
       ),
     );
   }
 
   // Widget untuk Kartu Ringkasan Anggaran Bulan Ini
-  Widget _buildBudgetSummaryCard(AsyncValue<List<BudgetEntity>> budgetsAsyncValue) {
+  Widget _buildBudgetSummaryCard(
+    AsyncValue<List<BudgetEntity>> budgetsAsyncValue,
+  ) {
     return GlassContainer(
       borderRadius: 20,
       padding: const EdgeInsets.all(20),
+      blur: 15,
+      opacity: 0.15,
       linearGradientColors: [
-        AppColors.glassBackgroundStart.withOpacity(0.15),
-        AppColors.glassBackgroundEnd.withOpacity(0.1),
+        AppColors.glassBackgroundStart.withOpacity(0.2),
+        AppColors.glassBackgroundEnd.withOpacity(0.15),
       ],
-      customBorder: Border.all(color: AppColors.glassBackgroundStart.withOpacity(0.2), width: 1),
+      customBorder: Border.all(
+        color: AppColors.glassBackgroundStart.withOpacity(0.25),
+        width: 1.5,
+      ),
       child: budgetsAsyncValue.when(
         data: (budgets) {
-          final double totalAllocated = budgets.fold(0.0, (sum, budget) => sum + budget.allocatedAmount);
-          final double totalSpent = budgets.fold(0.0, (sum, budget) => sum + budget.spentAmount);
+          final double totalAllocated = budgets.fold(
+            0.0,
+            (sum, budget) => sum + budget.allocatedAmount,
+          );
+          final double totalSpent = budgets.fold(
+            0.0,
+            (sum, budget) => sum + budget.spentAmount,
+          );
           final double remaining = totalAllocated - totalSpent;
-          final double percentageUsed = totalAllocated > 0 ? (totalSpent / totalAllocated).clamp(0.0, 1.0) : 0.0;
+          final double percentageUsed =
+              totalAllocated > 0
+                  ? (totalSpent / totalAllocated).clamp(0.0, 1.0)
+                  : 0.0;
           Color progressBarColor = AppColors.accentGreen;
           if (percentageUsed > 0.8) {
             progressBarColor = AppColors.error;
@@ -593,33 +813,68 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 10),
-              _buildSummaryRow('Total Anggaran', totalAllocated, AppColors.accentBlue),
+              Text(
+                '',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: AppColors.primaryText,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 15),
+              _buildSummaryRow(
+                'Total Anggaran',
+                totalAllocated,
+                AppColors.accentBlue,
+              ),
               _buildSummaryRow('Terpakai', totalSpent, progressBarColor),
-              _buildSummaryRow('Sisa', remaining, remaining >= 0 ? AppColors.accentGreen : AppColors.error),
+              _buildSummaryRow(
+                'Sisa',
+                remaining,
+                remaining >= 0 ? AppColors.accentGreen : AppColors.error,
+              ),
               const SizedBox(height: 15),
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: LinearProgressIndicator(
                   value: percentageUsed,
-                  backgroundColor: AppColors.secondaryBackground.withOpacity(0.5),
+                  backgroundColor: AppColors.secondaryBackground.withOpacity(
+                    0.5,
+                  ),
                   valueColor: AlwaysStoppedAnimation<Color>(progressBarColor),
                   minHeight: 10,
                 ),
               ),
               const SizedBox(height: 10),
-              Text(
-                '${(percentageUsed * 100).toStringAsFixed(1)}% Terpakai',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: progressBarColor,
-                      fontWeight: FontWeight.bold,
-                    ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '${(percentageUsed * 100).toStringAsFixed(1)}% Terpakai',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: progressBarColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           );
         },
-        loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentBlue)),
-        error: (error, stack) => Center(child: Text('Gagal memuat ringkasan: ${error.toString().split(':')[0]}', style: TextStyle(color: AppColors.error))),
+        loading:
+            () => SizedBox(
+              height: 150,
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.accentBlue),
+              ),
+            ),
+        error:
+            (error, stack) => SizedBox(
+              height: 150,
+              child: Center(
+                child: Text(
+                  'Gagal memuat ringkasan: ${error.toString().split(':')[0]}',
+                  style: TextStyle(color: AppColors.error),
+                ),
+              ),
+            ),
       ),
     );
   }
@@ -632,11 +887,16 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
         children: [
           Text(
             label,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
           ),
           Text(
             'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(amount)}',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: color, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -658,7 +918,10 @@ class _BudgetCategoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double percentageSpent = budget.allocatedAmount > 0 ? (budget.spentAmount / budget.allocatedAmount).clamp(0.0, 1.0) : 0.0;
+    final double percentageSpent =
+        budget.allocatedAmount > 0
+            ? (budget.spentAmount / budget.allocatedAmount).clamp(0.0, 1.0)
+            : 0.0;
     Color progressColor = AppColors.accentGreen;
     if (percentageSpent > 0.8) {
       progressColor = AppColors.error;
@@ -673,11 +936,16 @@ class _BudgetCategoryItem extends StatelessWidget {
     return GlassContainer(
       borderRadius: 15,
       padding: const EdgeInsets.all(16.0),
+      blur: 10,
+      opacity: 0.1,
       linearGradientColors: [
-        AppColors.glassBackgroundStart.withOpacity(0.1),
-        AppColors.glassBackgroundEnd.withOpacity(0.05),
+        AppColors.glassBackgroundStart.withOpacity(0.15),
+        AppColors.glassBackgroundEnd.withOpacity(0.1),
       ],
-      customBorder: Border.all(color: AppColors.glassBackgroundStart.withOpacity(0.15), width: 1),
+      customBorder: Border.all(
+        color: AppColors.glassBackgroundStart.withOpacity(0.2),
+        width: 1,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -689,17 +957,24 @@ class _BudgetCategoryItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      budget.name, // Menggunakan properti 'name'
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.primaryText, fontWeight: FontWeight.bold),
+                      budget.name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.primaryText,
+                        fontWeight: FontWeight.bold,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      'Kategori: ${budget.category}', // Menampilkan kategori
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
+                      'Kategori: ${budget.category}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.secondaryText,
+                      ),
                     ),
                     Text(
-                      'Periode: $formattedStartDate - $formattedEndDate', // Menampilkan periode
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.tertiaryText),
+                      'Periode: $formattedStartDate - $formattedEndDate',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.tertiaryText,
+                      ),
                     ),
                   ],
                 ),
@@ -708,12 +983,12 @@ class _BudgetCategoryItem extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.edit, color: AppColors.accentBlue),
+                    icon: const Icon(Icons.edit, color: AppColors.accentBlue),
                     onPressed: onEdit,
                     tooltip: 'Edit Anggaran',
                   ),
                   IconButton(
-                    icon: Icon(Icons.delete, color: AppColors.error),
+                    icon: const Icon(Icons.delete, color: AppColors.error),
                     onPressed: onDelete,
                     tooltip: 'Hapus Anggaran',
                   ),
@@ -723,12 +998,16 @@ class _BudgetCategoryItem extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Dialokasikan: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.allocatedAmount)}', // Menggunakan allocatedAmount
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
+            'Dialokasikan: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.allocatedAmount)}',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
           ),
           Text(
-            'Terpakai: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.spentAmount)}', // Menggunakan spentAmount
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: progressColor),
+            'Terpakai: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.spentAmount)}',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: progressColor),
           ),
           const SizedBox(height: 10),
           ClipRRect(
@@ -741,12 +1020,15 @@ class _BudgetCategoryItem extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 5),
-          Text(
-            '${(percentageSpent * 100).toStringAsFixed(1)}% Terpakai',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: progressColor.withOpacity(0.8),
-                  fontWeight: FontWeight.bold,
-                ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              '${(percentageSpent * 100).toStringAsFixed(1)}% Terpakai',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: progressColor.withOpacity(0.8),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),

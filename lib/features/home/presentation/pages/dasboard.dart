@@ -24,6 +24,7 @@ class DashboardPage extends ConsumerWidget {
     final String nextHabit = ref.watch(nextHabitProvider);
 
     return AppScaffold(
+      const SizedBox(height: 15),
       title: 'Hi, Hirudorax!',
       actions: [
         IconButton(

@@ -31,6 +31,7 @@ class FinanceOverviewPage extends ConsumerWidget {
     }
 
     return AppScaffold(
+      const SizedBox(height: 15),
       title: '',
       appBarColor: AppColors.primaryBackground,
       leading: IconButton(

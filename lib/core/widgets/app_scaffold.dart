@@ -11,7 +11,7 @@ class AppScaffold extends StatelessWidget {
   final Widget? bottomNavigationBar;
   final Color? appBarColor; // Untuk custom color AppBar glassmorphism
 
-  const AppScaffold({
+  const AppScaffold(SizedBox sizedBox, {
     super.key,
     required this.body,
     this.title,
