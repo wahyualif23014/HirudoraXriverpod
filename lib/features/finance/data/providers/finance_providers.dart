@@ -3,14 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Import Domain Layer (Entities & Repository Interface)
-import '../../domain/entity/budget_entity.dart'; // Sudah benar
-import '../../domain/entity/transaction_entity.dart'; // Sudah benar
-import '../../data/repositories/finance_repository.dart'; // Sudah benar (interface)
+import '../../domain/entity/budget_entity.dart'; 
+import '../../domain/entity/transaction_entity.dart';
+import '../../data/repositories/finance_repository.dart';
 
 import '../../data/datasources/finance_remote_datasource.dart'; 
-import '../../data/repositories/finance_repository_impl.dart'; // Sudah benar
+import '../../data/repositories/finance_repository_impl.dart'; 
 
-// --- Dependency Providers (Lapisan terbawah, diakses oleh Notifier) ---
 
 // Provider untuk Remote Data Source (implementasi langsung ke Supabase)
 // Ini adalah tempat kita menginisialisasi FinanceSupabaseDataSourceImpl
@@ -31,7 +30,6 @@ final budgetsStreamProvider = StreamProvider<List<BudgetEntity>>((ref) {
   return ref.read(financeRepositoryProvider).getBudgetsStream();
 });
 
-// StreamProvider untuk mendapatkan daftar transaksi secara real-time ke UI
 final transactionsStreamProvider = StreamProvider<List<TransactionEntity>>((ref) {
   // Langsung memanggil metode dari Repository
   return ref.read(financeRepositoryProvider).getTransactionsStream();
@@ -46,11 +44,11 @@ class BudgetNotifier extends AsyncNotifier<void> {
   Future<void> addBudget(BudgetEntity budget) async {
     state = const AsyncLoading(); 
     try {
-      await ref.read(financeRepositoryProvider).addBudget(budget); // Langsung panggil repository
-      state = const AsyncData(null); // Set state ke data (berhasil)
+      await ref.read(financeRepositoryProvider).addBudget(budget);
+      state = const AsyncData(null); 
     } catch (e, st) {
-      state = AsyncError(e, st); // Set state ke error
-      rethrow; // Lempar kembali error agar bisa ditangkap di UI untuk Snackbar, dll.
+      state = AsyncError(e, st); 
+      rethrow; 
     }
   }
 
