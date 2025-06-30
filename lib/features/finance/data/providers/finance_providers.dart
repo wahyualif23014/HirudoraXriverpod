@@ -22,13 +22,10 @@ import '../../data/repositories/finance_repository_impl.dart'; // Sudah benar
 // Provider untuk Remote Data Source (implementasi langsung ke Supabase)
 // Ini adalah tempat kita menginisialisasi FinanceSupabaseDataSourceImpl
 final financeRemoteDataSourceProvider = Provider<FinanceRemoteDataSource>((ref) {
-  // Menggunakan Supabase.instance.client yang sudah diinisialisasi di main.dart
-  // Pastikan FinanceSupabaseDataSourceImpl diimpor dengan benar di atas
   return FinanceSupabaseDataSourceImpl(Supabase.instance.client);
 });
 
 // Provider untuk Repository (implementasi dari interface domain)
-// Ini adalah "file" yang memanggil repository yang dimaksud (disediakan untuk Notifier lain).
 final financeRepositoryProvider = Provider<FinanceRepository>((ref) {
   final remoteDataSource = ref.read(financeRemoteDataSourceProvider);
   return FinanceRepositoryImpl(remoteDataSource);
@@ -50,16 +47,13 @@ final transactionsStreamProvider = StreamProvider<List<TransactionEntity>>((ref)
 });
 
 
-// AsyncNotifierProvider untuk operasi tambah/update/delete budget
-// Mengelola state loading/error untuk aksi budget
 class BudgetNotifier extends AsyncNotifier<void> {
   @override
   Future<void> build() async {
-    // Tidak perlu load data di sini untuk operasi CRUD
   }
 
   Future<void> addBudget(BudgetEntity budget) async {
-    state = const AsyncLoading(); // Set state ke loading
+    state = const AsyncLoading(); 
     try {
       await ref.read(financeRepositoryProvider).addBudget(budget); // Langsung panggil repository
       state = const AsyncData(null); // Set state ke data (berhasil)
