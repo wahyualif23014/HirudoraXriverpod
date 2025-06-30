@@ -40,16 +40,14 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
 
   // Fungsi untuk menampilkan form tambah/edit budget (modal bottom sheet)
   void _showBudgetForm({BudgetEntity? budget}) {
-    // Reset form state dan controllers
-    _formKey.currentState?.reset(); // Reset validator state
+    _formKey.currentState?.reset();
     setState(() {
       _editingBudget = budget;
       if (budget != null) {
         _nameController.text = budget.name;
         _categoryController.text = budget.category;
-        _allocatedAmountController.text = NumberFormat.decimalPattern(
-          'id_ID',
-        ).format(budget.allocatedAmount);
+        _allocatedAmountController.text =
+            NumberFormat.decimalPattern('id_ID').format(budget.allocatedAmount);
         _startDate = budget.startDate;
         _endDate = budget.endDate;
       } else {
@@ -126,9 +124,8 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                           return 'Jumlah anggaran tidak boleh kosong';
                         }
                         try {
-                          final parsed = NumberFormat.decimalPattern(
-                            'id_ID',
-                          ).parse(value);
+                          final parsed =
+                              NumberFormat.decimalPattern('id_ID').parse(value);
                           if (parsed <= 0) {
                             return 'Masukkan jumlah yang valid (lebih dari 0)';
                           }
@@ -244,7 +241,8 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                                   color: AppColors.primaryText.withOpacity(0.2),
                                 ),
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 12),
                             ),
                             child: const Text(
                               'Batal',
@@ -267,8 +265,8 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                                         'Tanggal Mulai tidak boleh kosong',
                                         style: AppTextStyles.bodyMedium
                                             .copyWith(
-                                              color: AppColors.primaryText,
-                                            ),
+                                          color: AppColors.primaryText,
+                                        ),
                                       ),
                                       backgroundColor: AppColors.error,
                                     ),
@@ -282,8 +280,8 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                                         'Tanggal Akhir tidak boleh kosong',
                                         style: AppTextStyles.bodyMedium
                                             .copyWith(
-                                              color: AppColors.primaryText,
-                                            ),
+                                          color: AppColors.primaryText,
+                                        ),
                                       ),
                                       backgroundColor: AppColors.error,
                                     ),
@@ -297,8 +295,8 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                                         'Tanggal Akhir tidak boleh sebelum Tanggal Mulai',
                                         style: AppTextStyles.bodyMedium
                                             .copyWith(
-                                              color: AppColors.primaryText,
-                                            ),
+                                          color: AppColors.primaryText,
+                                        ),
                                       ),
                                       backgroundColor: AppColors.error,
                                     ),
@@ -309,16 +307,16 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.accentBlue.withOpacity(
-                                0.7,
-                              ),
+                              backgroundColor:
+                                  AppColors.accentBlue.withOpacity(0.7),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 side: BorderSide(
                                   color: AppColors.primaryText.withOpacity(0.2),
                                 ),
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 12),
                             ),
                             child: Text(
                               budget == null ? 'Tambah' : 'Simpan',
@@ -415,10 +413,9 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     return TextFormField(
       readOnly: true,
       controller: TextEditingController(
-        text:
-            selectedDate == null
-                ? ''
-                : DateFormat('dd/MM/yyyy').format(selectedDate),
+        text: selectedDate == null
+            ? ''
+            : DateFormat('dd/MM/yyyy').format(selectedDate),
       ),
       style: const TextStyle(color: AppColors.primaryText),
       decoration: InputDecoration(
@@ -484,10 +481,9 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     // Parsing allocatedAmount dengan benar
     double parsedAllocatedAmount;
     try {
-      parsedAllocatedAmount =
-          NumberFormat.decimalPattern(
-            'id_ID',
-          ).parse(_allocatedAmountController.text).toDouble();
+      parsedAllocatedAmount = NumberFormat.decimalPattern('id_ID')
+          .parse(_allocatedAmountController.text)
+          .toDouble();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -525,14 +521,11 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
       await budgetNotifier.updateBudget(budgetToSave);
     }
 
-    // Menggunakan listen untuk FutureProvider atau StateNotifier saat ada action
-    // Ini lebih baik daripada membaca state setelah await, karena state mungkin berubah.
     ref.listenManual(budgetNotifierProvider, (previous, next) {
       next.whenOrNull(
         data: (_) {
-          // Pastikan modal sheet masih terbuka sebelum pop
           if (Navigator.of(context).canPop()) {
-            Navigator.pop(context); // Tutup bottom sheet
+            Navigator.pop(context);
           }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -547,18 +540,16 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
               backgroundColor: AppColors.accentGreen,
             ),
           );
-          // Set _editingBudget menjadi null setelah operasi berhasil untuk memastikan form siap untuk tambah baru
           setState(() {
             _editingBudget = null;
           });
-          // *** Kunci utama: Invalidate provider agar data diperbarui dari Supabase ***
-          ref.invalidate(budgetsStreamProvider);
+          ref.invalidate(budgetsStreamProvider); // Invalidate untuk refresh data
         },
         error: (error, stack) {
           if (Navigator.of(context).canPop()) {
             Navigator.pop(
               context,
-            ); // Tutup bottom sheet jika error dan ingin menampilkan SnackBar
+            );
           }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -580,88 +571,86 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
   void _deleteBudget(String id) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: AppColors.secondaryBackground,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.secondaryBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'Hapus Anggaran?',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(color: AppColors.primaryText),
+        ),
+        content: Text(
+          'Yakin ingin menghapus anggaran ini? Ini tidak akan menghapus transaksi terkait.',
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.secondaryText,
             ),
-            title: Text(
-              'Hapus Anggaran?',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(color: AppColors.primaryText),
-            ),
-            content: Text(
-              'Yakin ingin menghapus anggaran ini? Ini tidak akan menghapus transaksi terkait.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.secondaryText,
-                ),
-                child: const Text('Batal'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final budgetNotifier = ref.read(
-                    budgetNotifierProvider.notifier,
-                  );
-                  await budgetNotifier.deleteBudget(id);
-                  if (mounted) {
-                    ref.listenManual(budgetNotifierProvider, (previous, next) {
-                      next.whenOrNull(
-                        data: (_) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Anggaran berhasil dihapus!',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.primaryText,
-                                ),
-                              ),
-                              backgroundColor: AppColors.accentGreen,
-                            ),
-                          );
-                          Navigator.pop(context); // Tutup dialog
-                          // *** Kunci utama: Invalidate provider agar data diperbarui dari Supabase ***
-                          ref.invalidate(budgetsStreamProvider);
-                        },
-                        error: (error, stack) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Gagal menghapus anggaran: ${error.toString().split(':')[0]}',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.primaryText,
-                                ),
-                              ),
-                              backgroundColor: AppColors.error,
-                            ),
-                          );
-                          Navigator.pop(context); // Tutup dialog
-                        },
-                      );
-                    });
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.error.withOpacity(0.8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  'Hapus',
-                  style: TextStyle(color: AppColors.primaryText),
-                ),
-              ),
-            ],
+            child: const Text('Batal'),
           ),
+          ElevatedButton(
+            onPressed: () async {
+              final budgetNotifier = ref.read(
+                budgetNotifierProvider.notifier,
+              );
+              await budgetNotifier.deleteBudget(id);
+              if (mounted) {
+                ref.listenManual(budgetNotifierProvider, (previous, next) {
+                  next.whenOrNull(
+                    data: (_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Anggaran berhasil dihapus!',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.primaryText,
+                            ),
+                          ),
+                          backgroundColor: AppColors.accentGreen,
+                        ),
+                      );
+                      Navigator.pop(context);
+                      ref.invalidate(budgetsStreamProvider);
+                    },
+                    error: (error, stack) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Gagal menghapus anggaran: ${error.toString().split(':')[0]}',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.primaryText,
+                            ),
+                          ),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                      Navigator.pop(context);
+                    },
+                  );
+                });
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error.withOpacity(0.8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(color: AppColors.primaryText),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -671,32 +660,41 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     final budgetActionState = ref.watch(budgetNotifierProvider);
 
     return AppScaffold(
-      const SizedBox(height: 20),
+      const SizedBox(height: 5),
       title: 'Manajemen Anggaran',
       body: CustomScrollView(
         slivers: [
-          // Ringkasan Anggaran sebagai SliverToBoxAdapter dengan padding
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 20.0,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: _buildBudgetSummaryCard(budgetsAsyncValue),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 15.0),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                'Kategori Anggaran',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppColors.primaryText,
-                ),
+          // Ringkasan Anggaran sebagai SliverAppBar (pinned)
+          SliverAppBar(
+            expandedHeight: 220.0,
+            // floating: false,
+            pinned: true,
+            backgroundColor: Colors.transparent,
+            automaticallyImplyLeading: false,
+            flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.pin,
+              background: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    16.0, 16.0, 16.0, 0.0), // Padding disesuaikan
+                child: _buildBudgetSummaryCard(budgetsAsyncValue),
               ),
             ),
           ),
 
+          // Judul "Kategori Anggaran"
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 15.0),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                'Kategori Anggaran',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: AppColors.primaryText,
+                    ),
+              ),
+            ),
+          ),
+
+          // Daftar Kategori Anggaran (Real-time dari Supabase) dengan swipe actions
           budgetsAsyncValue.when(
             data: (budgets) {
               if (budgets.isEmpty) {
@@ -706,66 +704,107 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                     child: Text(
                       'Belum ada anggaran. Tambahkan yang pertama!',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.secondaryText,
-                      ),
+                            color: AppColors.secondaryText,
+                          ),
                       textAlign: TextAlign.center,
                     ),
                   ),
                 );
               }
               return SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final budget = budgets[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: 12.0,
-                      left: 16.0,
-                      right: 16.0,
-                    ),
-                    child: _BudgetCategoryItem(
-                      budget: budget,
-                      onEdit: () => _showBudgetForm(budget: budget),
-                      onDelete: () => _deleteBudget(budget.id),
-                    ),
-                  );
-                }, childCount: budgets.length),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final budget = budgets[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                          bottom: 12.0, left: 16.0, right: 16.0),
+                      child: Dismissible(
+                        key: ValueKey(budget.id), // Unique key for Dismissible
+                        direction: DismissDirection.horizontal,
+                        confirmDismiss: (direction) async {
+                          if (direction == DismissDirection.endToStart) {
+                            // Swipe to delete
+                            _deleteBudget(budget.id);
+                            return false; // Kembali ke posisi semula setelah dialog
+                          } else if (direction == DismissDirection.startToEnd) {
+                            // Swipe to edit
+                            _showBudgetForm(budget: budget);
+                            return false; // Kembali ke posisi semula setelah modal
+                          }
+                          return false;
+                        },
+                        // Background saat swipe dari kiri ke kanan (Edit)
+                        background: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppColors.accentBlue.withOpacity(0.8), Colors.transparent],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: const Icon(Icons.edit, color: AppColors.primaryText),
+                        ),
+                        // Background saat swipe dari kanan ke kiri (Delete)
+                        secondaryBackground: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.transparent, AppColors.error.withOpacity(0.8)],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: const Icon(Icons.delete, color: AppColors.primaryText),
+                        ),
+                        child: _BudgetCategoryItem(
+                          budget: budget,
+                          onEdit: () => _showBudgetForm(budget: budget), // Tetap ada untuk tombol manual
+                          onDelete: () => _deleteBudget(budget.id), // Tetap ada untuk tombol manual
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: budgets.length,
+                ),
               );
             },
-            loading:
-                () => SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.accentBlue,
-                    ),
-                  ),
+            loading: () => SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.accentBlue,
                 ),
-            error:
-                (error, stack) => SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: Text(
-                      'Gagal memuat anggaran: ${error.toString().split(':')[0]}',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: AppColors.error),
-                    ),
-                  ),
+              ),
+            ),
+            error: (error, stack) => SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: Text(
+                  'Gagal memuat anggaran: ${error.toString().split(':')[0]}',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: AppColors.error),
                 ),
+              ),
+            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: budgetActionState.isLoading ? null : () => _showBudgetForm(),
         backgroundColor: AppColors.accentBlue.withOpacity(0.8),
-        child:
-            budgetActionState.isLoading
-                ? CircularProgressIndicator(color: AppColors.primaryText)
-                : const Icon(
-                  Icons.add_rounded,
-                  color: AppColors.primaryText,
-                  size: 30,
-                ),
+        child: budgetActionState.isLoading
+            ? CircularProgressIndicator(color: AppColors.primaryText)
+            : const Icon(
+                Icons.add_rounded,
+                color: AppColors.primaryText,
+                size: 30,
+              ),
         tooltip: 'Tambah Anggaran Baru',
       ),
     );
@@ -777,7 +816,7 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
   ) {
     return GlassContainer(
       borderRadius: 20,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(35),
       blur: 15,
       opacity: 0.15,
       linearGradientColors: [
@@ -799,10 +838,9 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
             (sum, budget) => sum + budget.spentAmount,
           );
           final double remaining = totalAllocated - totalSpent;
-          final double percentageUsed =
-              totalAllocated > 0
-                  ? (totalSpent / totalAllocated).clamp(0.0, 1.0)
-                  : 0.0;
+          final double percentageUsed = totalAllocated > 0
+              ? (totalSpent / totalAllocated).clamp(0.0, 1.0)
+              : 0.0;
           Color progressBarColor = AppColors.accentGreen;
           if (percentageUsed > 0.8) {
             progressBarColor = AppColors.error;
@@ -816,16 +854,13 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
               Text(
                 '',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.primaryText,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: AppColors.primaryText,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 15),
               _buildSummaryRow(
-                'Total Anggaran',
-                totalAllocated,
-                AppColors.accentBlue,
-              ),
+                  'Total Anggaran', totalAllocated, AppColors.accentBlue),
               _buildSummaryRow('Terpakai', totalSpent, progressBarColor),
               _buildSummaryRow(
                 'Sisa',
@@ -837,9 +872,8 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                 borderRadius: BorderRadius.circular(10),
                 child: LinearProgressIndicator(
                   value: percentageUsed,
-                  backgroundColor: AppColors.secondaryBackground.withOpacity(
-                    0.5,
-                  ),
+                  backgroundColor:
+                      AppColors.secondaryBackground.withOpacity(0.5),
                   valueColor: AlwaysStoppedAnimation<Color>(progressBarColor),
                   minHeight: 10,
                 ),
@@ -850,31 +884,24 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                 child: Text(
                   '${(percentageUsed * 100).toStringAsFixed(1)}% Terpakai',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: progressBarColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: progressBarColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ),
             ],
           );
         },
-        loading:
-            () => SizedBox(
-              height: 150,
-              child: Center(
-                child: CircularProgressIndicator(color: AppColors.accentBlue),
-              ),
-            ),
-        error:
-            (error, stack) => SizedBox(
-              height: 150,
-              child: Center(
+        loading: () => SizedBox(
+            height: 150,
+            child: Center(
+                child: CircularProgressIndicator(color: AppColors.accentBlue))),
+        error: (error, stack) => SizedBox(
+            height: 150,
+            child: Center(
                 child: Text(
-                  'Gagal memuat ringkasan: ${error.toString().split(':')[0]}',
-                  style: TextStyle(color: AppColors.error),
-                ),
-              ),
-            ),
+                    'Gagal memuat ringkasan: ${error.toString().split(':')[0]}',
+                    style: TextStyle(color: AppColors.error)))),
       ),
     );
   }
@@ -894,9 +921,9 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
           Text(
             'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(amount)}',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ],
       ),
@@ -907,6 +934,8 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
 // Widget terpisah untuk menampilkan item kategori anggaran
 class _BudgetCategoryItem extends StatelessWidget {
   final BudgetEntity budget;
+  // Menghapus onEdit dan onDelete dari _BudgetCategoryItem karena akan ditangani oleh Dismissible
+  // Namun, tetap mempertahankan parameter ini jika Anda masih ingin tombol di dalam item bekerja secara terpisah
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -918,10 +947,9 @@ class _BudgetCategoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double percentageSpent =
-        budget.allocatedAmount > 0
-            ? (budget.spentAmount / budget.allocatedAmount).clamp(0.0, 1.0)
-            : 0.0;
+    final double percentageSpent = budget.allocatedAmount > 0
+        ? (budget.spentAmount / budget.allocatedAmount).clamp(0.0, 1.0)
+        : 0.0;
     Color progressColor = AppColors.accentGreen;
     if (percentageSpent > 0.8) {
       progressColor = AppColors.error;
@@ -929,7 +957,7 @@ class _BudgetCategoryItem extends StatelessWidget {
       progressColor = AppColors.accentOrange;
     }
 
-    final dateFormat = DateFormat('dd MMM yyyy'); // Menambahkan tahun ke format
+    final dateFormat = DateFormat('dd MMM yyyy'); // Menggunakan 'yyyy' untuk tahun penuh
     final String formattedStartDate = dateFormat.format(budget.startDate);
     final String formattedEndDate = dateFormat.format(budget.endDate);
 
@@ -959,44 +987,29 @@ class _BudgetCategoryItem extends StatelessWidget {
                     Text(
                       budget.name,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.primaryText,
-                        fontWeight: FontWeight.bold,
-                      ),
+                            color: AppColors.primaryText,
+                            fontWeight: FontWeight.bold,
+                          ),
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       'Kategori: ${budget.category}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.secondaryText,
-                      ),
+                            color: AppColors.secondaryText,
+                          ),
                     ),
                     Text(
                       'Periode: $formattedStartDate - $formattedEndDate',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.tertiaryText,
-                      ),
+                            color: AppColors.tertiaryText,
+                          ),
                     ),
                   ],
                 ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: AppColors.accentBlue),
-                    onPressed: onEdit,
-                    tooltip: 'Edit Anggaran',
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: AppColors.error),
-                    onPressed: onDelete,
-                    tooltip: 'Hapus Anggaran',
-                  ),
-                ],
-              ),
+             
             ],
           ),
-          const SizedBox(height: 8),
           Text(
             'Dialokasikan: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.allocatedAmount)}',
             style: Theme.of(
@@ -1025,9 +1038,9 @@ class _BudgetCategoryItem extends StatelessWidget {
             child: Text(
               '${(percentageSpent * 100).toStringAsFixed(1)}% Terpakai',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: progressColor.withOpacity(0.8),
-                fontWeight: FontWeight.bold,
-              ),
+                    color: progressColor.withOpacity(0.8),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ),
         ],
