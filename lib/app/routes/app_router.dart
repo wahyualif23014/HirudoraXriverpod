@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hirudorax/features/activities/presentation/pages/activity_detail_page.dart';
-import 'package:hirudorax/features/activities/presentation/pages/activity_list_page.dart';
 import 'package:hirudorax/features/activities/presentation/pages/add_activity_page.dart';
 
 // --- Impor halaman-halaman Anda yang akan digunakan ---

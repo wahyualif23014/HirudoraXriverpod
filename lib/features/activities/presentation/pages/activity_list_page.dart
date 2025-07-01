@@ -150,7 +150,6 @@ class _ActivityItem extends StatelessWidget {
   final VoidCallback onTap;
 
   const _ActivityItem({
-    super.key,
     required this.activity,
     required this.onToggleCompletion,
     required this.onTap,

@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hirudorax/features/activities/data/provider/activity_providers.dart';
 import 'package:uuid/uuid.dart'; // Untuk menghasilkan ID unik
 import '../../domain/entity/activity_entity.dart';
-import '../../../activities/data/repositories/activity_repository.dart';
-import '../../../activities/data/repositories/activity_repository_impl.dart'; // Untuk mengakses activityRepositoryProvider
+ // Untuk mengakses activityRepositoryProvider
 
 // Menggunakan AsyncNotifier untuk state management yang lebih modern dengan Riverpod 2.0+
 // Ini akan mengelola AsyncValue<List<ActivityEntity>>
