@@ -140,7 +140,7 @@ class DashboardPage extends ConsumerWidget {
                 icon: Icons.add_task_rounded,
                 label: 'Add Activity',
                 color: AppColors.accentOrange,
-                onTap: () => context.go(AppRoutes.addActivityPath),
+                onTap: () => context.go(AppRoutes.activitiesHubPath),
               ),
               _buildQuickActionButton(
                 context,

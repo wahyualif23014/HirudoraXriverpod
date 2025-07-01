@@ -26,10 +26,10 @@ class ActivitiesPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Log Aktivitas Harian',
+              '',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.primaryText),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 60),
             GlassContainer(
               borderRadius: 15,
               padding: const EdgeInsets.all(20),
