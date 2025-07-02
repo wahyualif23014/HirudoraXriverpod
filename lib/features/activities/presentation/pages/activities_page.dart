@@ -2,15 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart'; // Pastikan GoRouter diimpor
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
-import '../../../../app/themes/app_theme.dart'; // Untuk AppTextStyles
 import '../../../../app/routes/routes.dart';
 
-import 'activity_list_page.dart'; // Pastikan path ini benar
+import 'activity_list_page.dart';
 
 class ActivitiesPage extends ConsumerWidget {
   const ActivitiesPage({super.key});
@@ -23,16 +22,14 @@ class ActivitiesPage extends ConsumerWidget {
         icon: const Icon(
           Icons.arrow_back_ios_rounded,
           color: AppColors.primaryText,
-        ), // Icon panah back
+        ), 
         onPressed: () {
           context.go(AppRoutes.homePath);
         },
       ),
       title: 'Aktivitas Saya',
       body: CustomScrollView(
-        // Menggunakan CustomScrollView untuk tata letak yang benar
         slivers: [
-          // Bagian informasi/summary di atas daftar
           SliverPadding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16.0,
@@ -76,7 +73,7 @@ class ActivitiesPage extends ConsumerWidget {
                       onPressed: () {
                         context.go(
                           AppRoutes.addActivityPath,
-                        ); // Navigasi menggunakan GoRouter
+                        ); 
                       },
                       icon: const Icon(
                         Icons.add_rounded,
@@ -110,7 +107,6 @@ class ActivitiesPage extends ConsumerWidget {
             ),
           ),
 
-          // Judul "Daftar Aktivitas" sebelum daftar aktual
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 15.0),
             sliver: SliverToBoxAdapter(
