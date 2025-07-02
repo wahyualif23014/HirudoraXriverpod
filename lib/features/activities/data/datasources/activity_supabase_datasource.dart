@@ -1,11 +1,11 @@
 // lib/features/activities/data/datasources/activity_supabase_datasource.dart
 
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'activity_remote_datasource.dart'; // Import interface
+import 'activity_remote_datasource.dart'; 
 import '../models/activity_model.dart';
 
 class ActivitySupabaseDataSourceImpl implements ActivityRemoteDataSource {
-  final SupabaseClient supabaseClient; // SupabaseClient akan diinject
+  final SupabaseClient supabaseClient; 
 
   ActivitySupabaseDataSourceImpl(this.supabaseClient);
 
