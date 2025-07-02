@@ -3,12 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart'; // Untuk format tanggal
+import 'package:intl/intl.dart'; 
 
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
-import '../../presentation/pages/activity_list_notifier.dart'; // Import ActivityListNotifier
+import '../../presentation/pages/activity_list_notifier.dart'; 
 
 class AddActivityPage extends ConsumerStatefulWidget {
   const AddActivityPage({super.key});
@@ -44,9 +44,9 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
       lastDate: DateTime(2101),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith( // Sesuaikan tema date picker
+          data: ThemeData.dark().copyWith( 
             colorScheme: ColorScheme.dark(
-              primary: AppColors.accentOrange, // Warna primer date picker
+              primary: AppColors.accentOrange, 
               onPrimary: AppColors.primaryText,
               onSurface: AppColors.primaryText,
               surface: AppColors.secondaryBackground,
@@ -76,7 +76,6 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
       final activityNotifier = ref.read(activityListNotifierProvider.notifier);
 
       try {
-        // Panggil metode addActivity dari notifier
         await activityNotifier.addActivity(
           title: _titleController.text,
           description: _descriptionController.text,
@@ -85,15 +84,14 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
           dueDate: _selectedDueDate,
         );
 
-        // Tampilkan pesan sukses
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Aktivitas berhasil ditambahkan!')),
           );
-          context.pop(); // Kembali ke halaman sebelumnya
+          context.pop(); 
         }
       } catch (e) {
-        // Tangani error
+        // Try cacht
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Gagal menambahkan aktivitas: ${e.toString()}')),
@@ -288,11 +286,11 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
           borderSide: BorderSide(color: AppColors.accentOrange.withOpacity(0.5), width: 2),
         ),
       ),
-      dropdownColor: AppColors.secondaryBackground, // Warna dropdown item background
+      dropdownColor: AppColors.secondaryBackground, // Warna dropdown 
       style: TextStyle(color: AppColors.primaryText), // Warna teks item dropdown
       items: List.generate(_priorityOptions.length, (index) {
         return DropdownMenuItem(
-          value: index + 1, // 1 for High, 2 for Medium, 3 for Low
+          value: index + 1, 
           child: Text(
             _priorityOptions[index],
             style: TextStyle(
