@@ -20,7 +20,7 @@ class ActivityListPage extends ConsumerWidget {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.secondaryBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Hapus Aktivitas?', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText)),
+        title: Text('Delete Activity ?', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText)),
         content: Text(
           'Anda yakin ingin menghapus aktivitas ini?',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
@@ -29,7 +29,7 @@ class ActivityListPage extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             style: TextButton.styleFrom(foregroundColor: AppColors.secondaryText),
-            child: const Text('Batal'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -46,7 +46,7 @@ class ActivityListPage extends ConsumerWidget {
               backgroundColor: AppColors.error.withOpacity(0.8),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            child: const Text('Hapus', style: TextStyle(color: AppColors.primaryText)),
+            child: const Text('Delete', style: TextStyle(color: AppColors.primaryText)),
           ),
         ],
       ),
@@ -79,18 +79,16 @@ class ActivityListPage extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 child: Dismissible(
                   key: ValueKey(activity.id),
-                  // ⭐ PERBAIKAN: Gunakan DismissDirection.endToStart dan atur 'background' saja untuk aksi delete
-                  // Atau, gunakan DismissDirection.horizontal dan pastikan kedua background ada.
-                  // Pilihan ini: Hanya izinkan swipe delete (kanan ke kiri)
+// di gunakan untuk geses dan menghapus 
                   direction: DismissDirection.endToStart, 
                   confirmDismiss: (direction) async {
                     if (direction == DismissDirection.endToStart) {
                       _deleteActivity(context, ref, activity.id);
                       return false;
                     }
-                    return false; // Untuk arah lain (meskipun tidak diizinkan oleh `direction`)
+                    return false; // Untuk arah lain 
                   },
-                  // ⭐ Gunakan `background` untuk aksi delete karena hanya ada satu arah swipe
+                  // aksi swipe slide
                   background: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -100,22 +98,16 @@ class ActivityListPage extends ConsumerWidget {
                       ),
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    alignment: Alignment.centerRight, // Icon muncul di kanan
+                    alignment: Alignment.centerRight,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: const Icon(Icons.delete, color: AppColors.primaryText, size: 28),
                   ),
-                  // ⭐ secondaryBackground tidak perlu lagi jika direction: DismissDirection.endToStart
-                  // Jika Anda ingin swipe kiri ke kanan (edit) kembali, ubah `direction` ke `horizontal`
-                  // dan uncomment `background` sebelumnya, lalu ganti nama ini jadi `secondaryBackground`.
-                  // secondaryBackground: Container(), // Dihapus karena tidak dibutuhkan dengan `direction: DismissDirection.endToStart`
-
                   child: _ActivityItem(
                     activity: activity,
                     onToggleCompletion: (bool? newValue) {
                       ref.read(activityListNotifierProvider.notifier).toggleActivityCompletion(activity);
                     },
                     onTap: () {
-                      // onTap saat ini tidak melakukan apa-apa, sesuai permintaan
                     },
                   ),
                 ),
