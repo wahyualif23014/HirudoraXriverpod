@@ -51,7 +51,6 @@ class ActivityListNotifier extends AsyncNotifier<List<ActivityEntity>> {
           throw Exception('Failed to add activity: ${failure.toString()}');
         },
         (addedActivity) async {
-          // Setelah berhasil, ambil ulang daftar aktivitas
           final updatedResult = await activityRepository.getActivities();
           return updatedResult.fold(
             (failure) => throw Exception('Failed to refresh activities after add: ${failure.toString()}'),
@@ -69,7 +68,7 @@ class ActivityListNotifier extends AsyncNotifier<List<ActivityEntity>> {
     final activityRepository = ref.watch(activityRepositoryProvider);
     final updatedActivity = activity.copyWith(
       isCompleted: !activity.isCompleted,
-      updatedAt: DateTime.now(), // Perbarui waktu update
+      updatedAt: DateTime.now(),
     );
 
     final result = await activityRepository.updateActivity(updatedActivity);
@@ -102,7 +101,7 @@ class ActivityListNotifier extends AsyncNotifier<List<ActivityEntity>> {
         (failure) {
           throw Exception('Failed to delete activity: ${failure.toString()}');
         },
-        (_) async { // _ menandakan tidak ada nilai yang dikembalikan dari delete
+        (_) async {
           final updatedResult = await activityRepository.getActivities();
           return updatedResult.fold(
             (failure) => throw Exception('Failed to refresh activities after delete: ${failure.toString()}'),
