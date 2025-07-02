@@ -122,9 +122,6 @@ class ActivitiesPage extends ConsumerWidget {
               ),
             ),
           ),
-
-          // Memasukkan ActivityListPage langsung sebagai sliver
-          // ActivityListPage.build(context, ref) akan menghasilkan SliverList atau SliverFillRemaining
           ActivityListPage().build(context, ref),
         ],
       ),
