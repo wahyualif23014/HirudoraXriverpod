@@ -59,13 +59,6 @@ class ActivityRemoteDataSourceImpl implements ActivityRemoteDataSource {
   Future<ActivityModel> addActivity(ActivityModel activity) async {
     try {
       final Map<String, dynamic> dataToInsert = activity.toJson();
-      // Supabase akan otomatis mengisi 'created_at' dan 'updated_at' jika diatur DEFAULT now()
-      // dan 'id' jika DEFAULT uuid_generate_v4().
-      // Anda bisa menghapus ini jika yakin Supabase akan mengelola:
-      // dataToInsert.remove('id');
-      // dataToInsert.remove('created_at');
-      // dataToInsert.remove('updated_at'); // Akan di-update otomatis oleh trigger jika ada
-
       final List<Map<String, dynamic>> response = await supabaseClient
           .from('activities')
           .insert(dataToInsert)
@@ -87,8 +80,7 @@ class ActivityRemoteDataSourceImpl implements ActivityRemoteDataSource {
   Future<ActivityModel> updateActivity(ActivityModel activity) async {
     try {
       final Map<String, dynamic> dataToUpdate = activity.toJson();
-      // Pastikan 'updated_at' diperbarui, atau biarkan Supabase trigger yang melakukan
-      dataToUpdate['updated_at'] = DateTime.now().toIso8601String(); // Pastikan ini selalu terupdate
+      dataToUpdate['updated_at'] = DateTime.now().toIso8601String(); 
 
       final List<Map<String, dynamic>> response = await supabaseClient
           .from('activities')
