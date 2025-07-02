@@ -1,31 +1,30 @@
 // lib/features/activities/domain/entity/activity_entity.dart
 
-import 'package:equatable/equatable.dart'; // Untuk perbandingan objek yang mudah dan konsisten
+import 'package:equatable/equatable.dart'; 
 
 class ActivityEntity extends Equatable {
   final String id;
   final String title;
-  final String description; // Bisa kosong
+  final String description; 
   final DateTime createdAt;
   final DateTime updatedAt;
-  final bool isCompleted;     // Untuk to-do list
-  final int priority;         // Misalnya: 1 (High), 2 (Medium), 3 (Low)
-  final List<String> tags;    // Misalnya: ['Work', 'Personal', 'Shopping']
-  final DateTime? dueDate;    // Tanggal jatuh tempo (opsional)
+  final bool isCompleted;    
+  final int priority;         
+  final List<String> tags;    
+  final DateTime? dueDate;  
 
   const ActivityEntity({
     required this.id,
     required this.title,
-    this.description = '', // Default value
+    this.description = '',
     required this.createdAt,
     required this.updatedAt,
-    this.isCompleted = false, // Default value
-    this.priority = 3,        // Default ke Low
-    this.tags = const [],     // Default ke list kosong
+    this.isCompleted = false, 
+    this.priority = 3,       
+    this.tags = const [],     
     this.dueDate,
   });
 
-  // Digunakan oleh Equatable untuk membandingkan objek berdasarkan propertinya
   @override
   List<Object?> get props => [
         id,
@@ -39,7 +38,6 @@ class ActivityEntity extends Equatable {
         dueDate,
       ];
 
-  // Optional: copyWith method untuk membuat instance baru dengan properti yang diubah
   ActivityEntity copyWith({
     String? id,
     String? title,
