@@ -1,6 +1,6 @@
 // lib/features/activities/data/models/activity_model.dart
 
-import '../../domain/entity/activity_entity.dart'; // Import ActivityEntity
+import '../../domain/entity/activity_entity.dart'; 
 
 class ActivityModel extends ActivityEntity {
   const ActivityModel({
@@ -19,13 +19,13 @@ class ActivityModel extends ActivityEntity {
     return ActivityModel(
       id: json['id'] as String,
       title: json['title'] as String,
-      description: (json['description'] ?? '') as String, // Handle null
-      createdAt: DateTime.parse(json['created_at'] as String), // Kolom Supabase
-      updatedAt: DateTime.parse(json['updated_at'] as String), // Kolom Supabase
-      isCompleted: (json['is_completed'] ?? false) as bool, // Kolom Supabase
-      priority: (json['priority'] ?? 3) as int,          // Kolom Supabase
-      tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [], // Handle null/type
-      dueDate: json['due_date'] != null ? DateTime.parse(json['due_date'] as String) : null, // Handle null
+      description: (json['description'] ?? '') as String, 
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+      isCompleted: (json['is_completed'] ?? false) as bool,
+      createdAt: DateTime.parse(json['created_at'] as String), 
+      priority: (json['priority'] ?? 3) as int,       
+      tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      dueDate: json['due_date'] != null ? DateTime.parse(json['due_date'] as String) : null,
     );
   }
 
@@ -34,12 +34,12 @@ class ActivityModel extends ActivityEntity {
       'id': id,
       'title': title,
       'description': description,
-      'created_at': createdAt.toIso8601String(), // Format tanggal untuk Supabase
-      'updated_at': updatedAt.toIso8601String(), // Format tanggal untuk Supabase
+      'created_at': createdAt.toIso8601String(), 
+      'updated_at': updatedAt.toIso8601String(), 
       'is_completed': isCompleted,
       'priority': priority,
       'tags': tags,
-      'due_date': dueDate?.toIso8601String(), // Format tanggal untuk Supabase, handle null
+      'due_date': dueDate?.toIso8601String(), 
     };
   }
 
