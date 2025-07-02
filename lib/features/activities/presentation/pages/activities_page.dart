@@ -127,7 +127,7 @@ class ActivitiesPage extends ConsumerWidget {
         },
         child: const Icon(Icons.add_rounded, color: AppColors.primaryText),
         backgroundColor: AppColors.accentOrange,
-        tooltip: 'Tambah Aktivitas Baru',
+        tooltip: 'Add Activity New',
       ),
     );
   }
