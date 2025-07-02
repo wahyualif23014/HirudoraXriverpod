@@ -2,15 +2,10 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hirudorax/features/activities/data/provider/activity_providers.dart';
-import 'package:uuid/uuid.dart'; // Untuk menghasilkan ID unik
+import 'package:uuid/uuid.dart'; 
 import '../../domain/entity/activity_entity.dart';
- // Untuk mengakses activityRepositoryProvider
 
-// Menggunakan AsyncNotifier untuk state management yang lebih modern dengan Riverpod 2.0+
-// Ini akan mengelola AsyncValue<List<ActivityEntity>>
 class ActivityListNotifier extends AsyncNotifier<List<ActivityEntity>> {
-  // Method 'build' akan dipanggil pertama kali saat notifier dibuat
-  // dan akan menginisialisasi state dengan mengambil daftar aktivitas.
   @override
   Future<List<ActivityEntity>> build() async {
     final activityRepository = ref.watch(activityRepositoryProvider);
@@ -23,7 +18,6 @@ class ActivityListNotifier extends AsyncNotifier<List<ActivityEntity>> {
     );
   }
 
-  // Method untuk menambahkan aktivitas baru
   Future<void> addActivity({
     required String title,
     String description = '',
@@ -31,11 +25,11 @@ class ActivityListNotifier extends AsyncNotifier<List<ActivityEntity>> {
     List<String> tags = const [],
     DateTime? dueDate,
   }) async {
-    state = const AsyncValue.loading(); // Set state ke loading
+    state = const AsyncValue.loading(); 
 
     final activityRepository = ref.watch(activityRepositoryProvider);
-    final uuid = const Uuid(); // Buat instance Uuid
-    final String newId = uuid.v4(); // Generate ID unik
+    final uuid = const Uuid();
+    final String newId = uuid.v4();
 
     final newActivity = ActivityEntity(
       id: newId,
