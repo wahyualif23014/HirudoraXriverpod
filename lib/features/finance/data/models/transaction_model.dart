@@ -20,8 +20,7 @@ class TransactionModel extends TransactionEntity {
       userId: json['user_id'] as String?,
       amount: (json['amount'] as num).toDouble(),
       type: json['type'] as String,
-      // --- PERBAIKAN DI SINI ---
-      category: json['category'] as String? ?? 'Uncategorized', // <--- Handle NULL: jika null, gunakan 'Uncategorized'
+      category: json['category'] as String? ?? 'Uncategorized',
       description: json['description'] as String?,
       date: DateTime.parse(json['created_at'] as String),
       budgetId: json['budget_id'] as String? ?? '',
