@@ -13,7 +13,7 @@ class TransactionEntity extends Equatable {
   final DateTime? createdAt; 
 
   const TransactionEntity({
-    this.id = '', // Default for new transactions
+    this.id = '', 
     this.userId,
     required this.amount,
     required this.type,
