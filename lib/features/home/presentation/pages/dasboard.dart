@@ -66,10 +66,9 @@ class DashboardPage extends ConsumerWidget {
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.secondaryText),
                 ),
                 const SizedBox(height: 8),
-                // Menggunakan .when() untuk menangani state loading, data, dan error dari AsyncValue
                 totalBalanceAsyncValue.when(
                   data: (balance) => Text(
-                    'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(balance)}', // Format mata uang
+                    'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(balance)}',
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           color: AppColors.primaryText,
                           fontWeight: FontWeight.bold,
