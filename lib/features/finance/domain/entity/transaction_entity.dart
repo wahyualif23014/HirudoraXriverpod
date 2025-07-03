@@ -58,8 +58,8 @@ class TransactionEntity extends Equatable {
       'type': type,
       'category': category, 
       'description': description,
-      'created_at': date.toIso8601String(), // Mengirim tanggal transaksi ke kolom 'created_at'
-      'budget_id': budgetId == null || budgetId!.isEmpty ? null : budgetId, // Mengirim null jika kosong
+      'created_at': date.toIso8601String(), 
+      'budget_id': budgetId == null || budgetId!.isEmpty ? null : budgetId,
     };
   }
 
