@@ -215,7 +215,7 @@ class FinanceOverviewPage extends ConsumerWidget {
       height: 90,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 19),
         children: [
           _buildActionChip(
             context,
@@ -224,7 +224,7 @@ class FinanceOverviewPage extends ConsumerWidget {
             color: AppColors.accentBlue,
             onTap: () => context.go(AppRoutes.addTransactionPath), 
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           _buildActionChip(
             context,
             icon: Icons.calendar_today_rounded,
@@ -232,7 +232,7 @@ class FinanceOverviewPage extends ConsumerWidget {
             color: AppColors.accentPurple,
             onTap: () => context.go(AppRoutes.budgetManagementPath),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           _buildActionChip(
             context,
             icon: Icons.military_tech_rounded,

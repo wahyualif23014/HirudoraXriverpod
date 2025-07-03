@@ -15,15 +15,25 @@ class HabitsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return AppScaffold(
       const SizedBox(height: 15),
-      title: 'Kebiasaan Saya',
+      title: 'The Habbit Tracker',
+      leading: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_rounded,
+          color: AppColors.primaryText,
+        ),
+        onPressed: () => context.go(AppRoutes.homePath),
+        tooltip: 'comback to home',
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Pelacak Kebiasaan',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.primaryText),
+              '',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(color: AppColors.primaryText),
             ),
             const SizedBox(height: 20),
             GlassContainer(
@@ -38,12 +48,16 @@ class HabitsPage extends ConsumerWidget {
                 children: [
                   Text(
                     'Anda belum memiliki kebiasaan yang dilacak.',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppColors.secondaryText,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   ElevatedButton.icon(
                     onPressed: () {
-                      context.go(AppRoutes.addHabitPath); // Navigasi ke halaman tambah kebiasaan
+                      context.go(
+                        AppRoutes.addHabitPath,
+                      ); 
                     },
                     icon: const Icon(Icons.add_rounded),
                     label: const Text('Tambah Kebiasaan Baru'),
@@ -55,12 +69,13 @@ class HabitsPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Di sini nanti akan tampil daftar kebiasaan dari provider
             Expanded(
               child: Center(
                 child: Text(
                   'Daftar Kebiasaan Akan Tampil Di Sini',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.tertiaryText),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.tertiaryText,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),

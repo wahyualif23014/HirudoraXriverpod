@@ -167,7 +167,7 @@ class DashboardPage extends ConsumerWidget {
               subtitle: recentActivityText, 
               icon: Icons.run_circle_rounded,
               iconColor: AppColors.accentOrange,
-              onTap: () => context.go(AppRoutes.activitiesHubPath),
+              onTap: () => context.go(AppRoutes.habitsHubPath),
             ),
             loading: () => _buildFeatureOverviewCard(
               context,
