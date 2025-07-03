@@ -28,7 +28,7 @@ class HabitEntity extends Equatable {
 
   const HabitEntity({
     this.id = '',
-    this.userId, // <--- UBAH: Tidak lagi required
+    this.userId,
     required this.name,
     this.description,
     this.frequency = HabitFrequency.daily,
