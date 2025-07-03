@@ -474,10 +474,10 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                         ),
                       ],
 
-                      const Spacer(), // Dorong tombol ke bawah
+                      const Spacer(), 
 
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 20.0), // Padding vertikal untuk tombol
+                        padding: const EdgeInsets.symmetric(vertical: 20.0), 
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
