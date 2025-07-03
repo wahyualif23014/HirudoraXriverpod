@@ -717,15 +717,13 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                         confirmDismiss: (direction) async {
                           if (direction == DismissDirection.endToStart) {
                             _deleteBudget(budget.id);
-                            return false; // Kembali ke posisi semula setelah dialog
+                            return false; 
                           } else if (direction == DismissDirection.startToEnd) {
-                            // Swipe to edit
                             _showBudgetForm(budget: budget);
-                            return false; // Kembali ke posisi semula setelah modal
+                            return false; 
                           }
                           return false;
                         },
-                        // Background saat swipe dari kiri ke kanan (Edit)
                         background: Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -755,8 +753,8 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                         ),
                         child: _BudgetCategoryItem(
                           budget: budget,
-                          onEdit: () => _showBudgetForm(budget: budget), // Tetap ada untuk tombol manual
-                          onDelete: () => _deleteBudget(budget.id), // Tetap ada untuk tombol manual
+                          onEdit: () => _showBudgetForm(budget: budget),
+                          onDelete: () => _deleteBudget(budget.id),
                         ),
                       ),
                     );
@@ -926,8 +924,6 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
 // Widget terpisah untuk menampilkan item kategori anggaran
 class _BudgetCategoryItem extends StatelessWidget {
   final BudgetEntity budget;
-  // Menghapus onEdit dan onDelete dari _BudgetCategoryItem karena akan ditangani oleh Dismissible
-  // Namun, tetap mempertahankan parameter ini jika Anda masih ingin tombol di dalam item bekerja secara terpisah
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -949,7 +945,7 @@ class _BudgetCategoryItem extends StatelessWidget {
       progressColor = AppColors.accentOrange;
     }
 
-    final dateFormat = DateFormat('dd MMM yyyy'); // Menggunakan 'yyyy' untuk tahun penuh
+    final dateFormat = DateFormat('dd MMM yyyy'); 
     final String formattedStartDate = dateFormat.format(budget.startDate);
     final String formattedEndDate = dateFormat.format(budget.endDate);
 
