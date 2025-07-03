@@ -7,7 +7,7 @@ class TransactionModel extends TransactionEntity {
     super.userId,
     required super.amount,
     required super.type,
-    required super.category, // Tetap required di sini karena entity required
+    required super.category, 
     super.description,
     required super.date,
     super.budgetId,

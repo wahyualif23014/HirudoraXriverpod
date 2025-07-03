@@ -36,7 +36,6 @@ class GoalModel extends GoalEntity {
     };
   }
 
-  // Helper factory untuk membuat GoalModel baru tanpa ID untuk penambahan
   factory GoalModel.fromEntity(GoalEntity entity) {
     return GoalModel(
       id: entity.id,

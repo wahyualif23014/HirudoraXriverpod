@@ -6,16 +6,13 @@ class FinanceSupabaseDataSource {
 
   FinanceSupabaseDataSource(this._supabase);
 
-  // Method untuk mendapatkan total saldo dari semua transaksi
-  // Asumsi: Kita menjumlahkan semua 'income' dan mengurangi 'expense'
+
   Future<double> getTotalBalance() async {
     try {
-      // Mengambil semua transaksi dari tabel 'transactions'
-      // Untuk sementara, kita ambil semua karena belum ada filter user_id
+  
       final List<Map<String, dynamic>> transactions = await _supabase
           .from('transactions')
-          .select('amount, type'); // Hanya ambil kolom yang relevan
-
+          .select('amount, type'); 
       double totalIncome = 0.0;
       double totalExpense = 0.0;
 
