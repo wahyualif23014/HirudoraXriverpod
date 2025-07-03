@@ -5,22 +5,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-// Import utama untuk theming, routes, dan custom widgets Anda
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
 import '../../../../app/routes/routes.dart';
-
-// Import providers dari fitur finance (untuk totalBalance)
+// provider
 import 'package:hirudorax/features/finance/data/providers/finance_providers.dart';
 
-// Import providers dari fitur activities (untuk ringkasan aktivitas)
-// Pastikan path ini benar sesuai struktur file Anda:
-// lib/features/activities/data/providers/activity_providers.dart
+
 import '../../../activities/data/provider/activity_providers.dart';
 
 
-// Ini tetap bisa digunakan jika Anda ingin placeholder untuk Next Habit
 final nextHabitProvider = StateProvider<String>((ref) => 'Workout - 30 mins');
 
 
@@ -33,7 +28,6 @@ class DashboardPage extends ConsumerWidget {
     final totalBalanceAsyncValue = ref.watch(totalBalanceSupabaseProvider);
 
     // 2. Watch recentActivityAsyncValue dari provider activities
-    //    Ini akan mengembalikan AsyncValue<String> karena recentActivitySummaryProvider adalah FutureProvider
     final recentActivityAsyncValue = ref.watch(recentActivitySummaryProvider);
 
 
