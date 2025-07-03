@@ -164,7 +164,7 @@ class DashboardPage extends ConsumerWidget {
             data: (recentActivityText) => _buildFeatureOverviewCard(
               context,
               title: 'Activities Progress',
-              subtitle: recentActivityText, // Menggunakan data dari provider
+              subtitle: recentActivityText, 
               icon: Icons.run_circle_rounded,
               iconColor: AppColors.accentOrange,
               onTap: () => context.go(AppRoutes.activitiesHubPath),
