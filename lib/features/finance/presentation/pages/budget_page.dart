@@ -670,13 +670,12 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
               collapseMode: CollapseMode.pin,
               background: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                    16.0, 16.0, 16.0, 0.0), // Padding disesuaikan
+                    16.0, 16.0, 16.0, 0.0),
                 child: _buildBudgetSummaryCard(budgetsAsyncValue),
               ),
             ),
           ),
 
-          // Judul "Kategori Anggaran"
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 15.0),
             sliver: SliverToBoxAdapter(
