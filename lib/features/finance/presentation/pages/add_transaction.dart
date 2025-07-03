@@ -114,7 +114,6 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                 selection: TextSelection.collapsed(offset: formatted.length),
               );
             } catch (_) {
-              // Handle parsing error if necessary, though validator should catch invalid inputs
             }
           } else {
             controller.value = TextEditingValue.empty;
@@ -272,27 +271,26 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
     return AppScaffold(
       const SizedBox(height: 10),
       title: widget.editingTransaction == null ? 'Tambah Transaksi Baru' : 'Edit Transaksi',
-      body: LayoutBuilder( // Menggunakan LayoutBuilder untuk responsivitas yang lebih baik
+      body: LayoutBuilder( 
         builder: (context, constraints) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
-            child: ConstrainedBox( // Menggunakan ConstrainedBox agar konten bisa stretch di SingleChildScrollView
+            child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: constraints.maxHeight - 48, // Tinggi minimum agar bisa stretch
+                minHeight: constraints.maxHeight - 48, 
               ),
-              child: IntrinsicHeight( // Penting untuk memungkinkan Column.mainAxisAlignment.spaceBetween bekerja dengan baik
+              child: IntrinsicHeight(
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Judul Form (opsional, jika sudah ada di AppBar)
-                      if (widget.editingTransaction != null) // Tampilkan hanya jika edit mode
+                      if (widget.editingTransaction != null) 
                         Text(
                           'Perbarui Transaksi',
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.primaryText),
                         ),
-                      const SizedBox(height: 60), // Spasi setelah judul form (atau awal form jika tidak ada judul)
+                      const SizedBox(height: 60), 
 
                       Text(
                         'Tipe Transaksi',
@@ -302,7 +300,7 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                       GlassContainer(
                         borderRadius: 10,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        blur: 5, // Sesuaikan blur untuk elemen kecil
+                        blur: 5, 
                         opacity: 0.1, // Sesuaikan opacity untuk elemen kecil
                         linearGradientColors: [
                           AppColors.glassBackgroundStart.withOpacity(0.1),
