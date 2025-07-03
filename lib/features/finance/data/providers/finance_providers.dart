@@ -2,7 +2,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Import Domain Layer (Entities & Repository Interface)
 import '../../domain/entity/budget_entity.dart'; 
 import '../../domain/entity/transaction_entity.dart';
 import '../../data/repositories/finance_repository.dart';
@@ -11,8 +10,7 @@ import '../../data/datasources/finance_remote_datasource.dart';
 import '../../data/repositories/finance_repository_impl.dart'; 
 
 
-// Provider untuk Remote Data Source (implementasi langsung ke Supabase)
-// Ini adalah tempat kita menginisialisasi FinanceSupabaseDataSourceImpl
+
 final financeRemoteDataSourceProvider = Provider<FinanceRemoteDataSource>((ref) {
   return FinanceSupabaseDataSourceImpl(Supabase.instance.client);
 });
@@ -26,12 +24,12 @@ final financeRepositoryProvider = Provider<FinanceRepository>((ref) {
 // --- State Providers (ViewModels untuk UI) ---
 
 final budgetsStreamProvider = StreamProvider<List<BudgetEntity>>((ref) {
-  // Langsung memanggil metode dari Repository
+  // Langsung memanggil method dari Repository
   return ref.read(financeRepositoryProvider).getBudgetsStream();
 });
 
 final transactionsStreamProvider = StreamProvider<List<TransactionEntity>>((ref) {
-  // Langsung memanggil metode dari Repository
+  // Langsung memanggil method dari Repository
   return ref.read(financeRepositoryProvider).getTransactionsStream();
 });
 
@@ -55,7 +53,7 @@ class BudgetNotifier extends AsyncNotifier<void> {
   Future<void> updateBudget(BudgetEntity budget) async {
     state = const AsyncLoading();
     try {
-      await ref.read(financeRepositoryProvider).updateBudget(budget); // Langsung panggil repository
+      await ref.read(financeRepositoryProvider).updateBudget(budget); 
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);
@@ -66,7 +64,7 @@ class BudgetNotifier extends AsyncNotifier<void> {
   Future<void> deleteBudget(String id) async {
     state = const AsyncLoading();
     try {
-      await ref.read(financeRepositoryProvider).deleteBudget(id); // Langsung panggil repository
+      await ref.read(financeRepositoryProvider).deleteBudget(id); 
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);
@@ -92,42 +90,38 @@ final budgetNotifierProvider = AsyncNotifierProvider<BudgetNotifier, void>(
 class TransactionNotifier extends AsyncNotifier<void> {
   @override
   Future<void> build() async {
-    // Tidak ada state awal yang perlu dibangun secara asinkron untuk notifier ini
   }
 
   Future<void> addTransaction(TransactionEntity transaction) async {
-    state = const AsyncLoading(); // Set state loading
+    state = const AsyncLoading();
     try {
-      // Panggil repository. Logika update budget SPENT harus sudah ada di dalam repository.
       await ref.read(financeRepositoryProvider).addTransaction(transaction);
-      state = const AsyncData(null); // Set state sukses
+      state = const AsyncData(null); 
     } catch (e, st) {
-      state = AsyncError(e, st); // Set state error
-      rethrow; // Lempar kembali error agar bisa ditangkap di UI jika diperlukan
+      state = AsyncError(e, st); 
+      rethrow;
     }
   }
 
   Future<void> updateTransaction(TransactionEntity transaction) async {
-    state = const AsyncLoading(); // Set state loading
+    state = const AsyncLoading(); 
     try {
-      // Panggil repository. Logika update budget SPENT harus sudah ada di dalam repository.
       await ref.read(financeRepositoryProvider).updateTransaction(transaction);
-      state = const AsyncData(null); // Set state sukses
+      state = const AsyncData(null); 
     } catch (e, st) {
-      state = AsyncError(e, st); // Set state error
-      rethrow; // Lempar kembali error
+      state = AsyncError(e, st); 
+      rethrow;
     }
   }
 
   Future<void> deleteTransaction(String transactionId, String budgetId, double amount, String transactionType) async {
-    state = const AsyncLoading(); // Set state loading
+    state = const AsyncLoading(); 
     try {
-      // Panggil repository. Logika update budget SPENT harus sudah ada di dalam repository.
       await ref.read(financeRepositoryProvider).deleteTransaction(transactionId, budgetId, amount, transactionType);
-      state = const AsyncData(null); // Set state sukses
+      state = const AsyncData(null); 
     } catch (e, st) {
-      state = AsyncError(e, st); // Set state error
-      rethrow; // Lempar kembali error
+      state = AsyncError(e, st); 
+      rethrow;
     }
   }
 }
@@ -137,31 +131,24 @@ final transactionNotifierProvider = AsyncNotifierProvider<TransactionNotifier, v
 );
 
 
-// --- Provider-provider Lain (Tidak berubah, sudah benar) ---
 
 // Provider untuk mendapatkan budget berdasarkan ID
 final budgetByIdProvider = Provider.family<BudgetEntity?, String>((ref, id) {
-  // Watch budgetsStreamProvider untuk mendapatkan daftar budget
   final budgetsAsyncValue = ref.watch(budgetsStreamProvider);
 
-  // Gunakan .when() untuk mengekstrak data dari AsyncValue
   return budgetsAsyncValue.when(
     data: (budgets) {
-      // Ketika data tersedia, coba cari budget berdasarkan ID
       try {
         return budgets.firstWhere((budget) => budget.id == id);
       } catch (_) {
-        // Jika tidak ditemukan, kembalikan null
         return null;
       }
     },
-    // Saat loading atau error, kembalikan null atau nilai default yang sesuai
-    loading: () => null, // Saat loading, kita tidak punya budget, jadi null
-    error: (e, st) => null, // Saat error, kita tidak punya budget, jadi null
+    loading: () => null, 
+    error: (e, st) => null, 
   );
 });
 
-// Provider untuk menghitung ringkasan keuangan (misal: total pengeluaran bulan ini)
 final monthlyFinanceSummaryProvider = StreamProvider.family<Map<String, double>, DateTime>((ref, monthYear) {
   return ref.watch(transactionsStreamProvider).when(
     data: (transactions) {

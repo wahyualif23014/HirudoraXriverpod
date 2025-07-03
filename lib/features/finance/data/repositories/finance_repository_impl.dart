@@ -65,7 +65,6 @@ class FinanceRepositoryImpl implements FinanceRepository {
 
     // --- Logika Penyesuaian Budget Saat Update Transaksi ---
     if (oldTransaction.budgetId != null && oldTransaction.budgetId!.isNotEmpty) {
-      // Kasus 1: budgetId berubah
       if (oldTransaction.budgetId != transaction.budgetId) {
         // Batalkan efek transaksi lama pada budget lama
         double oldAmountChange = oldTransaction.type == 'expense' ? -oldTransaction.amount : oldTransaction.amount;
