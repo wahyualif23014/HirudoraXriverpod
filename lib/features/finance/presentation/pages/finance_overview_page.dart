@@ -210,7 +210,6 @@ class FinanceOverviewPage extends ConsumerWidget {
     );
   }
 
-  // Helper untuk Aksi Cepat
   Widget _buildQuickFinanceActions(BuildContext context) {
     return SizedBox(
       height: 90,
@@ -271,7 +270,6 @@ class FinanceOverviewPage extends ConsumerWidget {
     );
   }
 
-  // Helper untuk Konfirmasi Dialog Hapus
   Future<bool> _showConfirmDeleteDialog(BuildContext context) async {
     return await showDialog(
       context: context,
@@ -303,12 +301,12 @@ class FinanceOverviewPage extends ConsumerWidget {
 class _TransactionListItem extends ConsumerWidget {
   final TransactionEntity transaction;
   final VoidCallback onDelete;
-  final VoidCallback onEdit; // Tambahkan callback untuk edit
+  final VoidCallback onEdit; 
 
   const _TransactionListItem({
     required this.transaction,
     required this.onDelete,
-    required this.onEdit, // Wajib diisi
+    required this.onEdit, 
   });
 
   @override
