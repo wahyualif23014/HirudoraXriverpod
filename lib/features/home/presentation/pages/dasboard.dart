@@ -76,7 +76,7 @@ class DashboardPage extends ConsumerWidget {
                   ),
                   loading: () => Center(child: CircularProgressIndicator(color: AppColors.primaryText)), // Indikator loading
                   error: (error, stack) => Text(
-                    'Error: ${error.toString().split(':')[0]}', // Sederhanakan pesan error
+                    'Error: ${error.toString().split(':')[0]}',
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           color: AppColors.error,
                           fontWeight: FontWeight.bold,
@@ -159,7 +159,7 @@ class DashboardPage extends ConsumerWidget {
             style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText),
           ),
           const SizedBox(height: 16),
-          // Menggunakan .when() untuk menampilkan ringkasan aktivitas
+          // untuk menampilkan ringkasan aktivitas
           recentActivityAsyncValue.when(
             data: (recentActivityText) => _buildFeatureOverviewCard(
               context,
