@@ -48,10 +48,7 @@ class TransactionEntity extends Equatable {
     );
   }
 
-  // Method to convert to JSON format for Supabase
-  // Perhatikan: `date` di sini akan menjadi `created_at` di Supabase
-  // Jika Anda menambahkan kolom `transaction_date` di Supabase,
-  // Anda harus membuat `transaction_date` terpisah di sini dan di model.
+
   Map<String, dynamic> toJson() {
     return {
       // 'id' tidak perlu disertakan saat INSERT (Supabase akan generate)
@@ -59,7 +56,7 @@ class TransactionEntity extends Equatable {
       'user_id': userId,
       'amount': amount,
       'type': type,
-      'category': category, // Pastikan ini ada di tabel Supabase
+      'category': category, 
       'description': description,
       'created_at': date.toIso8601String(), // Mengirim tanggal transaksi ke kolom 'created_at'
       'budget_id': budgetId == null || budgetId!.isEmpty ? null : budgetId, // Mengirim null jika kosong
