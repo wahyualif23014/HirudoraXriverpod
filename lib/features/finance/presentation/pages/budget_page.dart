@@ -688,7 +688,6 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
             ),
           ),
 
-          // Daftar Kategori Anggaran (Real-time dari Supabase) dengan swipe actions
           budgetsAsyncValue.when(
             data: (budgets) {
               if (budgets.isEmpty) {
@@ -713,11 +712,10 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
                       padding: const EdgeInsets.only(
                           bottom: 12.0, left: 16.0, right: 16.0),
                       child: Dismissible(
-                        key: ValueKey(budget.id), // Unique key for Dismissible
+                        key: ValueKey(budget.id), 
                         direction: DismissDirection.horizontal,
                         confirmDismiss: (direction) async {
                           if (direction == DismissDirection.endToStart) {
-                            // Swipe to delete
                             _deleteBudget(budget.id);
                             return false; // Kembali ke posisi semula setelah dialog
                           } else if (direction == DismissDirection.startToEnd) {
