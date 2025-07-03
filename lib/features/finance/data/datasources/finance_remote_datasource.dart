@@ -30,7 +30,6 @@ class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource {
   // --- Budget Implementations ---
   @override
   Stream<List<BudgetModel>> getBudgetsStream() {
-    // Supabase Realtime Stream
     return _supabase
         .from('budgets') 
         .stream(primaryKey: ['id']) 
@@ -121,7 +120,7 @@ class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource {
       return null;
     } catch (e, st) {
       print('Unexpected Error getting budget by ID $id: $e\n$st');
-      rethrow; // Lempar error tak terduga
+      rethrow; 
     }
   }
 
@@ -129,7 +128,7 @@ class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource {
   @override
   Stream<List<TransactionModel>> getTransactionsStream() {
     return _supabase
-        .from('transactions') // Nama tabel di Supabase
+        .from('transactions') 
         .stream(primaryKey: ['id'])
         .map((List<Map<String, dynamic>> maps) {
           return maps.map((map) => TransactionModel.fromJson(map)).toList();
