@@ -18,13 +18,12 @@ class TransactionEntity extends Equatable {
     required this.amount,
     required this.type,
     this.description,
-    required this.category, // Wajib diisi sekarang
+    required this.category, 
     required this.date,
     this.budgetId,
-    this.createdAt, // Default null untuk yang baru, akan diisi dari DB
+    this.createdAt,
   });
 
-  // Method to create a copy with changed values
   TransactionEntity copyWith({
     String? id,
     String? userId,
