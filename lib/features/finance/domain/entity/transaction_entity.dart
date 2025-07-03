@@ -6,11 +6,11 @@ class TransactionEntity extends Equatable {
   final String? userId; 
   final double amount;
   final String type; // 'income' or 'expense'
-  final String category; // Tambahkan ini
+  final String category; 
   final String? description;
-  final DateTime date; // Ini akan dipetakan dari 'created_at' atau 'transaction_date'
-  final String? budgetId; // Tambahkan ini, bisa null jika tidak terkait budget
-  final DateTime? createdAt; // Tambahkan ini untuk melacak waktu pembuatan record di DB
+  final DateTime date; 
+  final String? budgetId; 
+  final DateTime? createdAt; 
 
   const TransactionEntity({
     this.id = '', // Default for new transactions
