@@ -23,7 +23,7 @@ abstract class FinanceRemoteDataSource {
 }
 
 // Implementasi menggunakan Supabase
-class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource { // <--- Ganti nama kelas implementasi
+class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource { 
   final SupabaseClient _supabase;
 
   FinanceSupabaseDataSourceImpl(this._supabase); // Konstruktor menerima SupabaseClient
