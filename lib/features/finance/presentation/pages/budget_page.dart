@@ -6,10 +6,10 @@ import 'package:intl/intl.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
-import '../../../../app/themes/app_theme.dart'; // Menggunakan AppTextStyles
+import '../../../../app/themes/app_theme.dart'; 
 
 import '../../domain/entity/budget_entity.dart';
-import '../../data/providers/finance_providers.dart'; // Pastikan ini mengimpor budgetNotifierProvider dan budgetsStreamProvider
+import '../../data/providers/finance_providers.dart'; 
 
 class BudgetPage extends ConsumerStatefulWidget {
   const BudgetPage({super.key});
@@ -38,7 +38,6 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     super.dispose();
   }
 
-  // Fungsi untuk menampilkan form tambah/edit budget (modal bottom sheet)
   void _showBudgetForm({BudgetEntity? budget}) {
     _formKey.currentState?.reset();
     setState(() {
@@ -403,7 +402,6 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
     );
   }
 
-  // Helper widget untuk input tanggal (styling profesional)
   Widget _buildDatePickerField(
     BuildContext context, {
     required String label,
@@ -478,7 +476,6 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
       return;
     }
 
-    // Parsing allocatedAmount dengan benar
     double parsedAllocatedAmount;
     try {
       parsedAllocatedAmount = NumberFormat.decimalPattern('id_ID')
@@ -543,7 +540,7 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
           setState(() {
             _editingBudget = null;
           });
-          ref.invalidate(budgetsStreamProvider); // Invalidate untuk refresh data
+          ref.invalidate(budgetsStreamProvider);
         },
         error: (error, stack) {
           if (Navigator.of(context).canPop()) {
@@ -664,10 +661,8 @@ class _BudgetPageState extends ConsumerState<BudgetPage> {
       title: 'Manajemen Anggaran',
       body: CustomScrollView(
         slivers: [
-          // Ringkasan Anggaran sebagai SliverAppBar (pinned)
           SliverAppBar(
             expandedHeight: 220.0,
-            // floating: false,
             pinned: true,
             backgroundColor: Colors.transparent,
             automaticallyImplyLeading: false,
