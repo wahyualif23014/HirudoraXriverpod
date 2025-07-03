@@ -43,7 +43,6 @@ class ActivityModel extends ActivityEntity {
     };
   }
 
-  // Optional: copyWith method agar konsisten dengan entity, berguna saat update
   @override
   ActivityModel copyWith({
     String? id,
@@ -69,7 +68,6 @@ class ActivityModel extends ActivityEntity {
     );
   }
 
-  // Optional: Konversi dari Entity ke Model jika diperlukan (misalnya saat add/update dari UI)
   factory ActivityModel.fromEntity(ActivityEntity entity) {
     return ActivityModel(
       id: entity.id,
