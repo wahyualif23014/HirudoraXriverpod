@@ -301,7 +301,7 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                         borderRadius: 10,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         blur: 5, 
-                        opacity: 0.1, // Sesuaikan opacity untuk elemen kecil
+                        opacity: 0.1, 
                         linearGradientColors: [
                           AppColors.glassBackgroundStart.withOpacity(0.1),
                           AppColors.glassBackgroundEnd.withOpacity(0.05),
@@ -322,9 +322,7 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                         controller: _amountController,
                         labelText: 'Jumlah (Rp)',
                         keyboardType: TextInputType.number,
-                        // OnChanged handler sudah ada untuk formatting
                         onChanged: (value) {
-                          // Formatting logic already handled in _buildTextFormField
                         },
                         validator: (value) {
                           if (value == null || value.isEmpty) {
