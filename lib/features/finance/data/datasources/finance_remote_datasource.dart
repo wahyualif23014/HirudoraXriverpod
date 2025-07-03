@@ -1,14 +1,10 @@
 // lib/finance/data/datasources/finance_remote_datasource.dart
-// Hapus import Firebase yang lama:
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:firebase_database/firebase_database.dart';
 
 // Tambahkan import Supabase
-import 'package:supabase_flutter/supabase_flutter.dart'; // <--- Tambahkan ini
-import '../models/budget_model.dart'; // Tetap
-import '../models/transaction_model.dart'; // Tetap
+import 'package:supabase_flutter/supabase_flutter.dart'; 
+import '../models/budget_model.dart';
+import '../models/transaction_model.dart'; 
 
-// Interface abstract FinanceRemoteDataSource tetap sama
 abstract class FinanceRemoteDataSource {
   // Budget
   Stream<List<BudgetModel>> getBudgetsStream();
@@ -23,7 +19,7 @@ abstract class FinanceRemoteDataSource {
   Future<void> addTransaction(TransactionModel transaction);
   Future<void> updateTransaction(TransactionModel transaction);
   Future<void> deleteTransaction(String id); 
-  Future<TransactionModel?> getTransactionById(String id); // <--- Tambahkan ini
+  Future<TransactionModel?> getTransactionById(String id); 
 }
 
 // Implementasi menggunakan Supabase
