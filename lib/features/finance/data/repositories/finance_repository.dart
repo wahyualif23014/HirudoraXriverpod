@@ -14,7 +14,7 @@ abstract class FinanceRepository {
   // Transaction Operations
   Future<void> addTransaction(TransactionEntity transaction);
   Future<void> updateTransaction(TransactionEntity transaction);
-  Future<void> deleteTransaction(String transactionId, String budgetId, double amount, String transactionType); // Perlu info transaksi lama untuk update budget
+  Future<void> deleteTransaction(String transactionId, String budgetId, double amount, String transactionType); 
   Stream<List<TransactionEntity>> getTransactionsStream();
   Future<TransactionEntity?> getTransactionById(String id);
 }
