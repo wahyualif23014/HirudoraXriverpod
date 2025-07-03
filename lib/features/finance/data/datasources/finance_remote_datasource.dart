@@ -22,11 +22,10 @@ abstract class FinanceRemoteDataSource {
   Future<TransactionModel?> getTransactionById(String id); 
 }
 
-// Implementasi menggunakan Supabase
 class FinanceSupabaseDataSourceImpl implements FinanceRemoteDataSource { 
   final SupabaseClient _supabase;
 
-  FinanceSupabaseDataSourceImpl(this._supabase); // Konstruktor menerima SupabaseClient
+  FinanceSupabaseDataSourceImpl(this._supabase);
 
   // --- Budget Implementations ---
   @override
