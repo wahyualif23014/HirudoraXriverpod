@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hirudorax/features/activities/presentation/pages/activity_detail_page.dart';
 import 'package:hirudorax/features/activities/presentation/pages/add_activity_page.dart';
+import 'package:hirudorax/features/habits/domain/entities/habit_entity.dart';
+import 'package:hirudorax/features/habits/presentation/page/add_habit_page.dart';
+import 'package:hirudorax/features/habits/presentation/page/habit_detail_page.dart';
 
 // --- Impor halaman-halaman Anda yang akan digunakan ---
 // PASTIKAN SEMUA IMPOR INI SUDAH BENAR PATH-NYA DAN FILENYA ADA
@@ -108,27 +111,28 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // --- Habits Feature Routes (DI-UNCOMMENT SELURUH BLOK INI) ---
       GoRoute(
-        path: AppRoutes.habitsHubPath, // Hub utama Habits
-        builder: (context, state) => const HabitsPage(), // <--- DI-UNCOMMENT
-        routes: [
-          GoRoute(
-            path: 'add', // Nested: /habits/add
-            builder:
-                (context, state) => const Text(
-                  'Add Habit Page (Coming Soon)',
-                ), // Placeholder OK
-          ),
-          GoRoute(
-            path: ':id', // Nested: /habits/:id
-            builder: (context, state) {
-              final habitId = state.pathParameters['id'];
-              return Text(
-                'Habit Detail Page for ID: $habitId',
-              ); // Placeholder OK
-            },
-          ),
-        ],
-      ),
+      path: AppRoutes.habitsHubPath, // Path: /habits
+      builder: (context, state) => const HabitsPage(), // Menghubungkan ke HabitsHubPage
+      routes: [
+        GoRoute(
+          path: 'add', // Nested: /habits/add
+          builder: (context, state) {
+            // Ketika navigasi ke /habits/add, jika ada 'extra' yang dilewatkan
+            // (misalnya dari tombol edit di HabitListItem), gunakan itu sebagai editingHabit.
+            final HabitEntity? editingHabit = state.extra as HabitEntity?;
+            return AddHabitPage(editingHabit: editingHabit);
+          },
+        ),
+        GoRoute(
+          path: ':id', // Nested: /habits/:id
+          builder: (context, state) {
+            final habitId = state.pathParameters['id']!; // Pastikan ID ada
+            // HabitDetailPage akan mengambil data sendiri berdasarkan ID
+            return HabitDetailPage(habitId: habitId);
+          },
+        ),
+      ],
+    ),
 
       // --- Goals Feature Routes (Ini sudah OK) ---
       GoRoute(
