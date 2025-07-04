@@ -91,17 +91,13 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
   @override
   Stream<List<HabitCompletionModel>> getHabitCompletionsStream({String? userId, String? habitId}) {
     var queryBuilder = supabaseClient.from('habit_completions').select('*');
-
-    // Terapkan filter jika habitId disediakan
     if (habitId != null) {
       queryBuilder = queryBuilder.eq('habit_id', habitId);
     }
-    // Terapkan filter jika userId disediakan
     if (userId != null) {
       queryBuilder = queryBuilder.eq('user_id', userId);
     }
 
-    // Lanjutkan dengan order dan real-time subscription
     final stream = supabaseClient
         .from('habit_completions')
         .stream(primaryKey: ['id'])
@@ -113,7 +109,6 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
 
   @override
   Future<List<HabitCompletionModel>> getHabitCompletions({String? userId, String? habitId}) async {
-    // Mulai dengan PostgrestFilterBuilder
     var queryBuilder = supabaseClient.from('habit_completions').select('*');
 
     // Terapkan filter jika habitId disediakan
