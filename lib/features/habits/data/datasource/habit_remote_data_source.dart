@@ -51,7 +51,6 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
       queryBuilder = queryBuilder.eq('user_id', userId);
     }
 
-    // Lanjutkan dengan order dan fetch data
     final response = await queryBuilder.order('created_at', ascending: false);
     return response.map((json) => HabitModel.fromJson(json)).toList();
   }
@@ -61,8 +60,8 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
     final response = await supabaseClient
         .from('habits')
         .insert(habit.toJson())
-        .select() // Mengembalikan data yang baru di-insert
-        .single(); // Mengambil satu objek
+        .select() 
+        .single(); 
 
     return HabitModel.fromJson(response);
   }
@@ -91,7 +90,6 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
 
   @override
   Stream<List<HabitCompletionModel>> getHabitCompletionsStream({String? userId, String? habitId}) {
-    // Mulai dengan PostgrestFilterBuilder
     var queryBuilder = supabaseClient.from('habit_completions').select('*');
 
     // Terapkan filter jika habitId disediakan
