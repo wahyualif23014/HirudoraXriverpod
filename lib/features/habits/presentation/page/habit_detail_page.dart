@@ -12,7 +12,6 @@ import '../../../../app/themes/app_theme.dart';
 import '../../../../app/routes/routes.dart';
 
 import '../../domain/entities/habit_entity.dart';
-import '../../domain/entities/habit_entity.dart'; // <--- PASTIKAN INI DIIMPOR
 import '../../data/providers/habit_providers.dart';
 
 class HabitDetailPage extends ConsumerWidget {
@@ -48,7 +47,6 @@ class HabitDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Dapatkan detail habit berdasarkan ID
     final habitAsyncValue = ref.watch(habitsStreamProvider.select((habitsAsync) {
       return habitsAsync.when(
         data: (habits) => AsyncData(habits.firstWhereOrNull((h) => h.id == habitId)),
@@ -194,7 +192,6 @@ class HabitDetailPage extends ConsumerWidget {
                                 ),
                                 const Divider(color: AppColors.tertiaryText, height: 16),
                                 ...compsOnDate.map((comp) {
-                                  // Perbaikan: Pastikan 'comp' adalah HabitCompletionEntity
                                   final typedComp = comp as HabitCompletionEntity; // <--- Casting eksplisit di sini
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 4.0),
