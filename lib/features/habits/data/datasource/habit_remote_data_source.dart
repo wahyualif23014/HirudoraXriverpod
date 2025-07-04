@@ -16,7 +16,7 @@ abstract class HabitRemoteDataSource {
   Future<HabitCompletionModel> addHabitCompletion(HabitCompletionModel completion);
   Future<HabitCompletionModel> updateHabitCompletion(HabitCompletionModel completion);
   Future<void> deleteHabitCompletion(String completionId);
-  Future<void> deleteHabitCompletionsByHabitId(String habitId); // Untuk menghapus semua completion saat habit dihapus
+  Future<void> deleteHabitCompletionsByHabitId(String habitId); 
 }
 
 class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {

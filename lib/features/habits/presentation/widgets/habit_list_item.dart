@@ -7,7 +7,6 @@ import 'package:hirudorax/app/routes/routes.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../app/themes/colors.dart';
-import '../../../../app/themes/app_theme.dart'; // Untuk AppTextStyles
 import '../../domain/entities/habit_entity.dart'; // Import HabitEntity
 import '../../data/providers/habit_providers.dart'; // Untuk habitIsCompletedTodayProvider
 
