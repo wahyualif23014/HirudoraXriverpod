@@ -28,7 +28,6 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
 
   @override
   Stream<List<HabitModel>> getHabitsStream({String? userId}) {
-    // Mulai dengan PostgrestFilterBuilder
     var queryBuilder = supabaseClient.from('habits').select('*');
 
     // Terapkan filter jika userId disediakan
