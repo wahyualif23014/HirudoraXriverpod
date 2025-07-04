@@ -35,7 +35,6 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
       queryBuilder = queryBuilder.eq('user_id', userId);
     }
 
-    // Lanjutkan dengan order dan stream
     // Supabase Flutter does not support .stream; use real-time subscription instead
     final stream = supabaseClient
         .from('habits')
