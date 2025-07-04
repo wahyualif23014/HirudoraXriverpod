@@ -44,7 +44,7 @@ class HabitRepositoryImpl implements HabitRepository {
     // Logika bisnis yang menggantikan use case:
     // Saat habit dihapus, kita juga ingin menghapus semua completion terkait.
     // Ini adalah contoh bagaimana repository bisa mengorkestrasi beberapa operasi data source.
-    await remoteDataSource.deleteHabitCompletionsByHabitId(habitId);
+    await remoteDataSource.deleteHabitCompletion(habitId);
     await remoteDataSource.deleteHabit(habitId);
   }
 
