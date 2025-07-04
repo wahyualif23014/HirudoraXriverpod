@@ -47,8 +47,6 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
   @override
   Future<List<HabitModel>> getHabits({String? userId}) async {
     var queryBuilder = supabaseClient.from('habits').select('*');
-
-    // Terapkan filter jika userId disediakan
     if (userId != null) {
       queryBuilder = queryBuilder.eq('user_id', userId);
     }
