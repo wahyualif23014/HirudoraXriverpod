@@ -7,7 +7,7 @@ abstract class HabitRemoteDataSource {
   Future<List<HabitModel>> getHabits({String? userId});
   Future<HabitModel> addHabit(HabitModel habit);
   Future<HabitModel> updateHabit(HabitModel habit);
-  Future<void> deleteHabit(String habitId); // Cukup ini, transaksi di repo
+  Future<void> deleteHabit(String habitId); 
 
   Stream<List<HabitCompletionModel>> getHabitCompletionsStream({String? userId, String? habitId});
   Future<List<HabitCompletionModel>> getHabitCompletions({String? userId, String? habitId});
@@ -26,7 +26,6 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
     try {
       return await action();
     } on PostgrestException catch (e) {
-      // Log error (opsional)
       print(e);
       // Lempar exception yang lebih umum atau spesifik domain
       throw Exception('Database error: ${e.message}');
@@ -39,7 +38,6 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
 
   @override
   Stream<List<HabitModel>> getHabitsStream({String? userId}) {
-    // FIX: Terapkan filter langsung ke stream builder
     final streamBuilder = supabaseClient.from('habits').stream(primaryKey: ['id']);
     
     if (userId != null) {
@@ -75,8 +73,6 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
 
   @override
   Future<void> deleteHabit(String habitId) => _handleError(() async {
-     // Ini akan dipanggil via RPC dari repository untuk memastikan transaksi
-     // Namun, jika ingin tetap direct, bisa seperti ini, tapi RPC lebih baik.
     await supabaseClient.from('habits').delete().eq('id', habitId);
   });
 
