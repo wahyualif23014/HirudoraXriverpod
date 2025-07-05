@@ -27,7 +27,6 @@ class HabitRemoteDataSourceImpl implements HabitRemoteDataSource {
       return await action();
     } on PostgrestException catch (e) {
       print(e);
-      // Lempar exception yang lebih umum atau spesifik domain
       throw Exception('Database error: ${e.message}');
     } catch (e) {
       throw Exception('An unexpected error occurred: $e');
