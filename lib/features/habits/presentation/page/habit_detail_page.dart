@@ -65,14 +65,8 @@ class HabitDetailPage extends ConsumerWidget {
     }));
 
     return AppScaffold(
-      const SizedBox(height: 5), 
-      title: 'Detail Kebiasaan',
-      appBarColor: AppColors.primaryBackground,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.primaryText),
-        onPressed: () => context.pop(), // Kembali ke halaman sebelumnya
-        tooltip: 'Kembali',
-      ),
+      const SizedBox(height: 5), // Placeholder, karena AppBar akan dihandle oleh CustomScrollView
+      // Matikan SafeArea di AppScaffold jika ada, kita handle manual
       body: (habitAsyncValue as AsyncValue).when(
         data: (habit) {
           if (habit == null) {
@@ -80,236 +74,296 @@ class HabitDetailPage extends ConsumerWidget {
               child: Text('Kebiasaan tidak ditemukan!', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.error)),
             );
           }
-
-          String frequencyText = '';
-          switch (habit.frequency) {
-            case HabitFrequency.daily:
-              frequencyText = 'Setiap Hari';
-              break;
-            case HabitFrequency.weekly:
-              frequencyText = 'Setiap Minggu';
-              break;
-            case HabitFrequency.custom:
-              if (habit.daysOfWeek.isNotEmpty) {
-                final days = habit.daysOfWeek.map((dayIndex) {
-                  return DateFormat.E('id_ID').format(DateTime(2023, 1, 2).add(Duration(days: dayIndex - 1)));
-                }).join(', ');
-                frequencyText = 'Hari: $days';
-              } else {
-                frequencyText = 'Hari Tertentu';
-              }
-              break;
-          }
-
-          String? reminderText;
-          if (habit.reminderTime != null) {
-            reminderText = DateFormat.jm().format(habit.reminderTime!);
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Habit
-                Text(
-                  habit.name,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.primaryText, fontWeight: FontWeight.bold),
-                ),
-                if (habit.description != null && habit.description!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      habit.description!,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
-                    ),
-                  ),
-                const SizedBox(height: 20),
-
-                // Detail Properti Habit
-                _buildInfoCard(
-                  context,
-                  title: 'Detail Kebiasaan',
-                  children: [
-                    _buildInfoRow(context, 'Frekuensi', frequencyText),
-                    if (habit.targetValue > 1)
-                      _buildInfoRow(context, 'Target', '${habit.targetValue} ${habit.unit ?? ''}'),
-                    if (reminderText != null)
-                      _buildInfoRow(context, 'Pengingat', reminderText),
-                    _buildInfoRow(context, 'Dibuat Pada', DateFormat('dd MMMEEEE', 'id_ID').format(habit.createdAt)), // Format dengan nama hari
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Riwayat Penyelesaian (Completions)
-                Text(
-                  'Riwayat Penyelesaian',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryText),
-                ),
-                const SizedBox(height: 15),
-                (completionsAsyncValue as AsyncValue).when( // Perlu casting ke AsyncValue agar bisa pakai .when
-                  data: (completions) {
-                    // Pastikan 'completions' adalah List<HabitCompletionEntity>
-                    // Perbaiki casting di groupBy
-                    final typedCompletions = completions.whereType<HabitCompletionEntity>().toList(); // <--- Pastikan tipe sudah benar
-
-                    if (typedCompletions.isEmpty) {
-                      return Text(
-                        'Belum ada catatan penyelesaian untuk kebiasaan ini.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
-                      );
-                    }
-
-                    // Kelompokkan berdasarkan tanggal untuk tampilan lebih rapi
-                    // Perbaikan: Pastikan tipe lambda di groupBy sesuai
-                    final groupedCompletions = groupBy<HabitCompletionEntity, String>(
-                      typedCompletions, // Gunakan list yang sudah di-type-check
-                      (c) => DateFormat('yyyy-MM-dd').format(c.completedAt),
-                    );
-                    final sortedDates = groupedCompletions.keys.toList()..sort((a, b) => b.compareTo(a)); // Urutkan tanggal terbaru dulu
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: sortedDates.map((dateKey) {
-                        final compsOnDate = groupedCompletions[dateKey]!;
-                        final displayDate = DateFormat('dd MMMM yyyy', 'id_ID').format(DateTime.parse(dateKey)); // Format dengan tahun
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: GlassContainer(
-                            borderRadius: 15,
-                            padding: const EdgeInsets.all(16),
-                            linearGradientColors: [
-                              AppColors.glassBackgroundStart.withOpacity(0.1),
-                              AppColors.glassBackgroundEnd.withOpacity(0.05),
-                            ],
-                            customBorder: Border.all(color: AppColors.glassBackgroundStart.withOpacity(0.15), width: 1),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  displayDate,
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.primaryText, fontWeight: FontWeight.bold),
-                                ),
-                                const Divider(color: AppColors.tertiaryText, height: 16),
-                                ...compsOnDate.map((comp) {
-                                  final typedComp = comp as HabitCompletionEntity; // <--- Casting eksplisit di sini
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Selesai pada ${DateFormat.jm().format(typedComp.completedAt)}', // Gunakan typedComp
-                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
-                                        ),
-                                        if (habit.targetValue > 1)
-                                          Text(
-                                            '${typedComp.actualValue} ${habit.unit ?? ''}', // Gunakan typedComp
-                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.accentGreen),
-                                          ),
-                                        if (habit.targetValue == 1)
-                                          Icon(Icons.check_circle_rounded, color: AppColors.accentGreen, size: 20),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  },
-                  loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentPurple)),
-                  error: (error, stack) => Text('Gagal memuat riwayat: ${error.toString().split(':')[0]}', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error)),
-                ),
-                const SizedBox(height: 30),
-
-                // Tombol Aksi (Edit, Delete, Archive)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          context.push(AppRoutes.addHabitPath, extra: habit); // Navigasi ke edit habit
-                        },
-                        icon: const Icon(Icons.edit_rounded, color: AppColors.primaryText),
-                        label: Text('Edit', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accentBlue.withOpacity(0.7),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
+          
+          return Column(
+            children: [
+              Expanded(
+                child: CustomScrollView(
+                  slivers: [
+                    // --- AppBar Dinamis ---
+                    SliverAppBar(
+                      pinned: true, // AppBar akan tetap terlihat saat scroll
+                      floating: false,
+                      elevation: 0,
+                      backgroundColor: AppColors.primaryBackground.withOpacity(0.8), // Efek transparan saat scroll
+                      centerTitle: true,
+                      title: Text('Detail Kebiasaan', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryText)),
+                      leading: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.primaryText),
+                        onPressed: () => context.pop(),
+                        tooltip: 'Kembali',
                       ),
                     ),
-                    const SizedBox(width: 15),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          final confirmed = await _showConfirmDeleteDialog(context);
-                          if (confirmed) {
-                            await ref.read(habitNotifierProvider.notifier).deleteHabit(habit.id);
-                            if (context.mounted) {
-                              context.pop(); // Kembali ke HabitsHubPage setelah delete
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Kebiasaan berhasil dihapus!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.accentGreen),
-                              );
-                            }
-                          }
-                        },
-                        icon: const Icon(Icons.delete_rounded, color: AppColors.primaryText),
-                        label: Text('Hapus', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.error.withOpacity(0.7),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+
+                    // --- Konten Scrollable ---
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 16),
+                            _buildHabitHeader(context, habit),
+                            const SizedBox(height: 24),
+                            _buildInfoSection(context, habit),
+                            const SizedBox(height: 24),
+                            _buildHistorySection(context, completionsAsyncValue as AsyncValue<dynamic>, habit),
+                            const SizedBox(height: 24), // Beri ruang sebelum akhir scroll
+                          ],
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 15),
-                // Tombol Archive/Unarchive
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      final updatedHabit = habit.copyWith(isArchived: !habit.isArchived);
-                      await ref.read(habitNotifierProvider.notifier).updateHabit(updatedHabit);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(habit.isArchived ? 'Kebiasaan diaktifkan kembali!' : 'Kebiasaan diarsipkan!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
-                            backgroundColor: AppColors.accentOrange,
-                          ),
-                        );
-                      }
-                    },
-                    icon: Icon(habit.isArchived ? Icons.unarchive_rounded : Icons.archive_rounded, color: AppColors.primaryText),
-                    label: Text(habit.isArchived ? 'Aktifkan Kembali' : 'Arsipkan Kebiasaan', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.tertiaryText.withOpacity(0.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+              // --- Tombol Aksi "Sticky" di Bawah ---
+              _buildActionButtons(context, ref, habit),
+            ],
           );
         },
         loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentPurple)),
         error: (error, stack) => Center(
-          child: Text('Gagal memuat detail kebiasaan: ${error.toString().split(':')[0]}', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error)),
+          child: Text('Gagal memuat detail: ${error.toString().split(':')[0]}', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error)),
         ),
       ),
     );
   }
 
-  // Helper untuk membuat card info
+  // Widget terpisah untuk Header Habit
+  Widget _buildHabitHeader(BuildContext context, HabitEntity habit) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          habit.name,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.primaryText, fontWeight: FontWeight.bold),
+        ),
+        if (habit.description != null && habit.description!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              habit.description!,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // Widget terpisah untuk Info Detail
+  Widget _buildInfoSection(BuildContext context, HabitEntity habit) {
+    String frequencyText = '';
+    // ... (Logika frequencyText Anda tetap sama)
+     switch (habit.frequency) {
+        case HabitFrequency.daily:
+          frequencyText = 'Setiap Hari';
+          break;
+        case HabitFrequency.weekly:
+          frequencyText = 'Setiap Minggu';
+          break;
+        case HabitFrequency.custom:
+          if (habit.daysOfWeek.isNotEmpty) {
+            final days = habit.daysOfWeek.map((dayIndex) {
+              return DateFormat.E('id_ID').format(DateTime(2023, 1, 2).add(Duration(days: dayIndex - 1)));
+            }).join(', ');
+            frequencyText = 'Hari: $days';
+          } else {
+            frequencyText = 'Hari Tertentu';
+          }
+          break;
+      }
+
+    String? reminderText;
+    if (habit.reminderTime != null) {
+      reminderText = DateFormat.jm().format(habit.reminderTime!);
+    }
+    
+    return _buildInfoCard(
+      context,
+      title: 'Detail Kebiasaan',
+      children: [
+        _buildInfoRow(context, 'Frekuensi', frequencyText),
+        if (habit.targetValue > 1)
+          _buildInfoRow(context, 'Target', '${habit.targetValue} ${habit.unit ?? ''}'),
+        if (reminderText != null)
+          _buildInfoRow(context, 'Pengingat', reminderText),
+        _buildInfoRow(context, 'Dibuat Pada', DateFormat('dd MMMM yyyy', 'id_ID').format(habit.createdAt)),
+      ],
+    );
+  }
+
+  // Widget terpisah untuk Riwayat
+  Widget _buildHistorySection(BuildContext context, AsyncValue completionsAsyncValue, HabitEntity habit) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Riwayat Penyelesaian',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryText),
+        ),
+        const SizedBox(height: 15),
+        completionsAsyncValue.when(
+          data: (completions) {
+            final typedCompletions = completions.whereType<HabitCompletionEntity>().toList();
+
+            if (typedCompletions.isEmpty) {
+              return Center(
+                child: Text(
+                  'Belum ada catatan penyelesaian.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
+                ),
+              );
+            }
+            
+            final groupedCompletions = groupBy<HabitCompletionEntity, String>(
+              typedCompletions,
+              (c) => DateFormat('yyyy-MM-dd').format(c.completedAt),
+            );
+            final sortedDates = groupedCompletions.keys.toList()..sort((a, b) => b.compareTo(a));
+
+            return Column(
+              children: sortedDates.map((dateKey) {
+                // ... (Kode untuk menampilkan item riwayat Anda tetap sama)
+                final compsOnDate = groupedCompletions[dateKey]!;
+                final displayDate = DateFormat('dd MMMM yyyy', 'id_ID').format(DateTime.parse(dateKey));
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: GlassContainer(
+                     borderRadius: 15,
+                    padding: const EdgeInsets.all(16),
+                    linearGradientColors: [
+                      AppColors.glassBackgroundStart.withOpacity(0.1),
+                      AppColors.glassBackgroundEnd.withOpacity(0.05),
+                    ],
+                    customBorder: Border.all(color: AppColors.glassBackgroundStart.withOpacity(0.15), width: 1),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayDate,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.primaryText, fontWeight: FontWeight.bold),
+                        ),
+                        const Divider(color: AppColors.tertiaryText, height: 16),
+                        ...compsOnDate.map((comp) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Selesai pada ${DateFormat.jm().format(comp.completedAt)}',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
+                                ),
+                                if (habit.targetValue > 1)
+                                  Text(
+                                    '${comp.actualValue} ${habit.unit ?? ''}',
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.accentGreen),
+                                  ),
+                                if (habit.targetValue == 1)
+                                  Icon(Icons.check_circle_rounded, color: AppColors.accentGreen, size: 20),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+          loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentPurple)),
+          error: (error, stack) => Text('Gagal memuat riwayat: ${error.toString().split(':')[0]}', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error)),
+        ),
+      ],
+    );
+  }
+  
+  // Widget terpisah untuk Tombol Aksi di Bawah
+  Widget _buildActionButtons(BuildContext context, WidgetRef ref, HabitEntity habit) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32), // Padding lebih besar di bawah untuk safe area
+      decoration: BoxDecoration(
+        color: AppColors.primaryBackground,
+        border: Border(top: BorderSide(color: AppColors.tertiaryText.withOpacity(0.2), width: 1)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => context.push(AppRoutes.addHabitPath, extra: habit),
+                  icon: const Icon(Icons.edit_rounded, color: AppColors.primaryText),
+                  label: Text('Edit', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accentBlue.withOpacity(0.7),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final confirmed = await _showConfirmDeleteDialog(context);
+                    if (confirmed) {
+                      await ref.read(habitNotifierProvider.notifier).deleteHabit(habit.id);
+                      if (context.mounted) {
+                        context.pop();
+                         ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Kebiasaan berhasil dihapus!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.accentGreen),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.delete_rounded, color: AppColors.primaryText),
+                  label: Text('Hapus', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText)),
+                   style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error.withOpacity(0.7),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final updatedHabit = habit.copyWith(isArchived: !habit.isArchived);
+                await ref.read(habitNotifierProvider.notifier).updateHabit(updatedHabit);
+                 if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(habit.isArchived ? 'Kebiasaan diaktifkan kembali!' : 'Kebiasaan diarsipkan!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)),
+                      backgroundColor: AppColors.accentOrange,
+                    ),
+                  );
+                }
+              },
+              icon: Icon(habit.isArchived ? Icons.unarchive_rounded : Icons.archive_rounded, color: AppColors.primaryText),
+              label: Text(habit.isArchived ? 'Aktifkan Kembali' : 'Arsipkan Kebiasaan', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.tertiaryText.withOpacity(0.5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper widget tidak berubah
   Widget _buildInfoCard(BuildContext context, {required String title, required List<Widget> children}) {
-    return GlassContainer(
+      // ... (kode _buildInfoCard Anda tetap sama)
+      return GlassContainer(
       borderRadius: 15,
       padding: const EdgeInsets.all(16),
       linearGradientColors: [
@@ -331,9 +385,9 @@ class HabitDetailPage extends ConsumerWidget {
     );
   }
 
-  // Helper untuk membuat baris info
   Widget _buildInfoRow(BuildContext context, String label, String value) {
-    return Padding(
+    // ... (kode _buildInfoRow Anda tetap sama)
+     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -346,7 +400,9 @@ class HabitDetailPage extends ConsumerWidget {
   }
 }
 
-// Untuk mengatasi 'firstWhereOrNull' jika belum ada di list (jika belum ada di core/utils)
+
+// Extension ini mungkin sudah tidak perlu jika Anda sudah punya di tempat lain
+// dan jika versi Dart/package collection Anda sudah mendukungnya secara default.
 extension ListExtension<T> on List<T> {
   T? firstWhereOrNull(bool Function(T element) test) {
     for (var element in this) {
