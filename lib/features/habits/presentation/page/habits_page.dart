@@ -215,7 +215,7 @@ class HabitsPage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            'Ringkasan Hari Ini',
+            'The Habitts',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.primaryText, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
