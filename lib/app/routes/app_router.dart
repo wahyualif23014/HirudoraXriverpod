@@ -46,9 +46,8 @@ import 'routes.dart';
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation:
-        AppRoutes.homePath, // Aplikasi akan LANGSUNG ke halaman Home/Dashboard
+        AppRoutes.homePath, 
 
-    // Logika pengalihan (redirect) tetap DITONAKTIFKAN SEMENTARA
     // redirect: (BuildContext context, GoRouterState state) { /* ... */ },
     routes: <GoRoute>[
       // --- Main Application Routes ---
