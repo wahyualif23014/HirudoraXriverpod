@@ -66,7 +66,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: 'add-transaction', // Nested: /finance/add-transaction
             builder:
                 (context, state) =>
-                    const AddTransactionPage(), // <--- Pastikan nama class sudah benar
+                    const AddTransactionPage(), 
           ),
           GoRoute(
             path: 'budgets', // Nested: /finance/budgets
@@ -81,13 +81,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // --- Activities Feature Routes (DI-UNCOMMENT SELURUH BLOK INI) ---
       // --- Activities Feature Routes ---
       GoRoute(
-        path: AppRoutes.activitiesHubPath, // /activities
+        path: AppRoutes.activitiesHubPath, 
         builder:
             (context, state) =>
-                const ActivitiesPage(), // Mengarahkan langsung ke daftar
+                const ActivitiesPage(), 
         routes: [
           GoRoute(
             path: 'add', // Nested: /activities/add
@@ -99,11 +98,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: ':id', // Nested: /activities/:id
             builder: (context, state) {
               final activityId = state.pathParameters['id'];
-              // Pastikan activityId tidak null, atau tangani kasus null.
-              // GoRouter menjamin pathParameters akan ada jika rute cocok.
               return ActivityDetailPage(
                 activityId: activityId!,
-              ); // Menggunakan halaman detail
+              );
             },
           ),
         ],
@@ -112,7 +109,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // --- Habits Feature Routes (DI-UNCOMMENT SELURUH BLOK INI) ---
       GoRoute(
       path: AppRoutes.habitsHubPath, // Path: /habits
-      builder: (context, state) => const HabitsPage(), // Menghubungkan ke HabitsHubPage
+      builder: (context, state) => const HabitsPage(), 
       routes: [
         GoRoute(
           path: 'add', // Nested: /habits/add
