@@ -19,7 +19,7 @@ import '../../features/home/presentation/pages/dasboard.dart';
 // Halaman Fitur Finance
 import '../../features/finance/presentation/pages/finance_overview_page.dart';
 import '../../features/finance/presentation/pages/budget_page.dart';
-import '../../features/finance/presentation/pages/add_transaction.dart'; // <--- Pastikan nama file dan class sudah benar
+import '../../features/finance/presentation/pages/add_transaction.dart'; // <--- clear
 
 // Halaman Fitur Activities (DI-UNCOMMENT)
 import '../../features/activities/presentation/pages/activities_page.dart';
@@ -28,8 +28,8 @@ import '../../features/activities/presentation/pages/activities_page.dart';
 
 // Halaman Fitur Habits (DI-UNCOMMENT)
 import '../../features/habits/presentation/page/habits_page.dart';
-// import '../../features/habits/presentation/pages/add_habit_page.dart';
-// import '../../features/habits/presentation/pages/habit_detail_page.dart';
+import '../../features/habits/presentation/page/add_habit_page.dart';
+import '../../features/habits/presentation/page/habit_detail_page.dart';
 
 // Halaman Fitur Goals (Placeholder)
 // import '../../features/goals/presentation/pages/goals_page.dart';
@@ -119,6 +119,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ),
         GoRoute(
           path: ':id', // Nested: /habits/:id
+          name: 'habitDetail',
           builder: (context, state) {
             final habitId = state.pathParameters['id']!;
             return HabitDetailPage(habitId: habitId);

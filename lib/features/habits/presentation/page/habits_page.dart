@@ -6,245 +6,311 @@ import 'package:hirudorax/features/habits/data/providers/habit_providers.dart';
 import 'package:hirudorax/features/habits/presentation/widgets/habit_list_item.dart';
 
 import '../../../../core/widgets/app_scaffold.dart';
-import '../../../../core/widgets/glass_container.dart'; 
+import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
-import '../../../../app/routes/routes.dart'; 
+import '../../../../app/routes/routes.dart';
+import '../../../../app/themes/app_theme.dart'; // Impor AppTextStyles
 
 class HabitsPage extends ConsumerWidget {
   const HabitsPage({super.key});
 
+  // Dialog konfirmasi hapus, tidak ada perubahan
   Future<bool> _showConfirmDeleteDialog(BuildContext context) async {
     return await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.secondaryBackground,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Hapus Kebiasaan?', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText)),
-        content: Text('Yakin ingin menghapus kebiasaan ini? Semua catatan penyelesaian juga akan terhapus.', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Batal', style: TextStyle(color: AppColors.secondaryText)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
-            ),
-            child: const Text('Hapus', style: TextStyle(color: AppColors.primaryText)),
-          ),
-        ],
-      ),
-    ) ?? false;
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                backgroundColor: AppColors.secondaryBackground,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: Text(
+                  'Hapus Kebiasaan?',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.primaryText,
+                  ),
+                ),
+                content: Text(
+                  'Yakin ingin menghapus kebiasaan ini? Semua catatan penyelesaian juga akan terhapus.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.secondaryText,
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text(
+                      'Batal',
+                      style: TextStyle(color: AppColors.secondaryText),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.error,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Hapus',
+                      style: TextStyle(color: AppColors.primaryText),
+                    ),
+                  ),
+                ],
+              ),
+        ) ??
+        false;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final habitsAsyncValue = ref.watch(habitsStreamProvider); // Stream semua habits
-    final dailyHabitSummary = ref.watch(dailyHabitSummaryProvider); // Ringkasan harian
+    final habitsAsyncValue = ref.watch(habitsStreamProvider);
+    final dailyHabitSummary = ref.watch(dailyHabitSummaryProvider);
 
     Future<void> _refreshData() async {
+      // Invalidate semua provider yang relevan
       ref.invalidate(habitsStreamProvider);
       ref.invalidate(dailyHabitSummaryProvider);
-      ref.invalidate(habitCompletionsStreamProvider); // Juga refresh completions
+      ref.invalidate(habitCompletionsStreamProvider);
     }
 
     return AppScaffold(
-      const SizedBox(height: 5),
-      title: '',
-      appBarColor: AppColors.primaryBackground,
-      leading: IconButton(
-        icon: const Icon(
-          Icons.arrow_back_ios_rounded, // Mengubah ikon kembali agar konsisten
-          color: AppColors.primaryText,
-        ),
-        onPressed: () => context.go(AppRoutes.homePath),
-        tooltip: 'Kembali ke Beranda',
-      ),
-      // actions: [
-      //   IconButton(
-      //     icon: const Icon(Icons.add_rounded, color: AppColors.primaryText),
-      //     onPressed: () => context.push(AppRoutes.addHabitPath), // Gunakan context.push untuk add
-      //     tooltip: 'Tambah Kebiasaan Baru',
-      //   ),
-      // ],
-      body: RefreshIndicator( // RefreshIndicator
+      const SizedBox(height: 5), // Placeholder
+      body: RefreshIndicator(
         onRefresh: _refreshData,
         color: AppColors.accentPurple,
-        backgroundColor: AppColors.secondaryBackground,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                '',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryText),
+        backgroundColor: AppColors.primaryText,
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              expandedHeight: 80.0, // Tinggi area header besar
+              backgroundColor: AppColors.primaryBackground.withOpacity(0.85),
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_rounded,
+                  color: AppColors.primaryText,
+                ),
+                onPressed: () => context.go(AppRoutes.homePath),
+                tooltip: 'Kembali ke Beranda',
               ),
-              const SizedBox(height: 35),
-
-              // Ringkasan Harian Kebiasaan
-              _buildDailySummaryCard(context, dailyHabitSummary),
-              const SizedBox(height: 25),
-
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Daftar Kebiasaan',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryText),
+              flexibleSpace: FlexibleSpaceBar(
+                titlePadding: const EdgeInsets.only(
+                  left: 60,
+                  bottom: 16,
+                ), // Sesuaikan padding judul
+                title: Text(
+                  'The Habitts',
+                  style: AppTextStyles.titleLarge.copyWith(
+                    color: AppColors.primaryText,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 10),
-                ],
+                ),
+                background: Container(color: AppColors.primaryBackground),
               ),
-              Expanded(
-                child: habitsAsyncValue.when(
-                  data: (habits) {
-                    if (habits.isEmpty) {
-                      return ListView( 
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: [
-                          GlassContainer( // Gunakan GlassContainer seperti contoh Anda
-                            borderRadius: 15,
-                            padding: const EdgeInsets.all(16),
-                            linearGradientColors: [
-                              AppColors.accentPurple.withOpacity(0.10,),
-                              AppColors.secondaryBackground.withOpacity(0.25),
-                              AppColors.accentPurple.withOpacity(0.10,),
-                            ],
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Belum ada kebiasaan yang dilacak',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: AppColors.secondaryText,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                ElevatedButton.icon(
-                                  onPressed: () {
-                                    context.push(AppRoutes.addHabitPath); // Gunakan context.push
-                                  },
-                                  icon: const Icon(Icons.add_rounded, color: AppColors.primaryText),
-                                  label: Text('Tambah Kebiasaan', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.primaryText)),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.accentPurple.withOpacity(0.8),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Padding( // Padding untuk teks "Belum ada kebiasaan" jika ada
-                          //   padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
-                          //   child: Center(
-                          //     child: Text(
-                          //       'Mulai lacak kebiasaan Anda sekarang!',
-                          //       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          //         color: AppColors.tertiaryText,
-                          //       ),
-                          //       textAlign: TextAlign.center,
-                          //     ),
-                          //   ),
-                          // ),
-                        ],
-                      );
-                    }
-                    return ListView.builder(
-                      itemCount: habits.length,
-                      padding: const EdgeInsets.only(top: 0), // Atur padding
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final habit = habits[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6.0), // Padding vertikal antar item
-                          child: HabitListItem( // Gunakan widget yang sudah kita pisahkan
-                            habit: habit,
-                            onToggleComplete: (bool completed) {
-                              ref.read(habitNotifierProvider.notifier).toggleHabitCompletion(habit.id, completed);
-                            },
-                            onEdit: () {
-                              context.push(AppRoutes.addHabitPath, extra: habit); // Kirim objek habit untuk edit
-                            },
-                            onDelete: () async {
-                              final confirmed = await _showConfirmDeleteDialog(context);
-                              if (confirmed) {
-                                ref.read(habitNotifierProvider.notifier).deleteHabit(habit.id);
-                              }
-                            },
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  loading: () => Center(child: CircularProgressIndicator(color: AppColors.accentPurple)),
-                  error: (error, stack) => Center(
-                    child: Text('Gagal memuat kebiasaan: ${error.toString().split(':')[0]}', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error)),
+            ),
+
+            // --- Kartu Ringkasan Harian ---
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                child: _buildDailySummaryCard(context, dailyHabitSummary),
+              ),
+            ),
+
+            // --- Judul "Daftar Kebiasaan" ---
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  'Daftar Kebiasaan',
+                  style: AppTextStyles.titleLarge.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryText,
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // --- Daftar Kebiasaan atau Tampilan Kosong ---
+            habitsAsyncValue.when(
+              data: (habits) {
+                if (habits.isEmpty) {
+                  return SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: _buildEmptyState(
+                        context,
+                      ), // Tampilan saat tidak ada data
+                    ),
+                  );
+                }
+                // Jika ada data, tampilkan dalam bentuk daftar sliver
+                return SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    16,
+                    10,
+                    16,
+                    80,
+                  ), // Padding bawah agar tidak tertutup FAB
+                  sliver: SliverList.builder(
+                    itemCount: habits.length,
+                    itemBuilder: (context, index) {
+                      final habit = habits[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6.0),
+                        child: HabitListItem(
+                          habit: habit,
+                          onToggleComplete: (bool completed) {
+                            ref
+                                .read(habitNotifierProvider.notifier)
+                                .toggleHabitCompletion(habit.id, completed);
+                          },
+                          onTap: () {
+                            context.pushNamed(
+                              'habitDetail',
+                              pathParameters: {'id': habit.id},
+                            );
+                          },
+                          onEdit: () {
+                            context.push(AppRoutes.addHabitPath, extra: habit);
+                          },
+                          onDelete: () async {
+                            final confirmed = await _showConfirmDeleteDialog(
+                              context,
+                            );
+                            if (confirmed) {
+                              ref
+                                  .read(habitNotifierProvider.notifier)
+                                  .deleteHabit(habit.id);
+                            }
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+              loading:
+                  () => const SliverFillRemaining(
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.accentPurple,
+                      ),
+                    ),
+                  ),
+              error:
+                  (error, stack) => SliverFillRemaining(
+                    child: Center(
+                      child: Text(
+                        'Gagal memuat kebiasaan: $error',
+                        style: const TextStyle(color: AppColors.error),
+                      ),
+                    ),
+                  ),
+            ),
+          ],
         ),
       ),
-      floatingActionButton: FloatingActionButton( // FAB untuk tambah kebiasaan
-        onPressed: () {
-          context.push(AppRoutes.addHabitPath); // Gunakan context.push
-        },
-        backgroundColor: AppColors.accentPurple.withOpacity(0.8),
-        child: const Icon(Icons.add_rounded, color: AppColors.primaryText, size: 30),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push(AppRoutes.addHabitPath),
+        backgroundColor: AppColors.accentPurple,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add_rounded, size: 30),
         tooltip: 'Tambah Kebiasaan Baru',
       ),
     );
   }
 
-  // Widget _buildDailySummaryCard
-  Widget _buildDailySummaryCard(BuildContext context, Map<String, int> summary) {
-    return GlassContainer( // Gunakan GlassContainer untuk konsistensi
-      borderRadius: 15,
+  // Widget untuk Kartu Ringkasan Harian (liquid glass)
+  Widget _buildDailySummaryCard(
+    BuildContext context,
+    Map<String, int> summary,
+  ) {
+    return GlassContainer(
+      borderRadius: 20,
       padding: const EdgeInsets.all(20),
-      linearGradientColors: [
-        AppColors.glassBackgroundStart.withOpacity(0.15),
-        AppColors.glassBackgroundEnd.withOpacity(0.1),
-      ],
-      customBorder: Border.all(color: AppColors.glassBackgroundStart.withOpacity(0.2), width: 1),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Text(
-            'The Habitts',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.primaryText, fontWeight: FontWeight.bold),
+          _buildSummaryItem(
+            context,
+            'Total Kebiasaan',
+            summary['total']!,
+            AppColors.accentPurple,
           ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildSummaryItem(context, 'Total Kebiasaan', summary['total']!, AppColors.accentPurple),
-              _buildSummaryItem(context, 'Selesai Hari Ini', summary['completedToday']!, AppColors.accentGreen),
-            ],
+          _buildSummaryItem(
+            context,
+            'Selesai Hari Ini',
+            summary['completedToday']!,
+            AppColors.accentGreen,
           ),
         ],
       ),
     );
   }
 
-  // Widget _buildSummaryItem
-  Widget _buildSummaryItem(BuildContext context, String label, int count, Color color) {
+  // Widget untuk item di dalam kartu ringkasan
+  Widget _buildSummaryItem(
+    BuildContext context,
+    String label,
+    int count,
+    Color color,
+  ) {
     return Column(
       children: [
         Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
-        ),
-        const SizedBox(height: 5),
-        Text(
           '$count',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: color, fontWeight: FontWeight.bold),
+          style: AppTextStyles.headlineSmall.copyWith(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.secondaryText,
+          ),
         ),
       ],
+    );
+  }
+
+  // Widget untuk tampilan saat tidak ada kebiasaan
+  Widget _buildEmptyState(BuildContext context) {
+    return GlassContainer(
+      borderRadius: 20,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.emoji_objects_outlined,
+            color: AppColors.accentPurple.withOpacity(0.8),
+            size: 50,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Mulai bangun kebiasaan baikmu!',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.titleMedium.copyWith(
+              color: AppColors.primaryText,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tekan tombol + di bawah untuk menambahkan kebiasaan pertamamu.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.secondaryText,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
