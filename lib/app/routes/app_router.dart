@@ -117,8 +117,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         GoRoute(
           path: 'add', // Nested: /habits/add
           builder: (context, state) {
-            // Ketika navigasi ke /habits/add, jika ada 'extra' yang dilewatkan
-            // (misalnya dari tombol edit di HabitListItem), gunakan itu sebagai editingHabit.
             final HabitEntity? editingHabit = state.extra as HabitEntity?;
             return AddHabitPage(editingHabit: editingHabit);
           },
@@ -126,8 +124,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         GoRoute(
           path: ':id', // Nested: /habits/:id
           builder: (context, state) {
-            final habitId = state.pathParameters['id']!; // Pastikan ID ada
-            // HabitDetailPage akan mengambil data sendiri berdasarkan ID
+            final habitId = state.pathParameters['id']!;
             return HabitDetailPage(habitId: habitId);
           },
         ),
