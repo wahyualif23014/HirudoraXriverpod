@@ -10,7 +10,7 @@ import '../../../../app/themes/colors.dart';
 import '../../../../app/themes/app_theme.dart';
 
 import '../../domain/entities/habit_entity.dart';
-import '../../data/providers/habit_providers.dart'; // Import providers habit
+import '../../data/providers/habit_providers.dart'; 
 
 class AddHabitPage extends ConsumerStatefulWidget {
   final HabitEntity? editingHabit; // Untuk mode edit
@@ -204,14 +204,14 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.editingHabit == null ? 'Buat Kebiasaan Baru' : 'Perbarui Kebiasaan',
+                  widget.editingHabit == null ? '' : '',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.primaryText),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 35),
 
                 _buildTextFormField(
                   controller: _nameController,
-                  labelText: 'Nama Kebiasaan (ex: Minum air, Olahraga)',
+                  labelText: 'Nama Kebiasaan (ex: Olahraga, dll)',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Nama kebiasaan tidak boleh kosong';
@@ -229,7 +229,6 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
                 ),
                 const SizedBox(height: 15),
 
-                // Target Value dan Unit
                 Row(
                   children: [
                     Expanded(
@@ -251,10 +250,10 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
                     ),
                     const SizedBox(width: 15),
                     Expanded(
-                      flex: 1,
+                      flex: 2,
                       child: _buildTextFormField(
                         controller: _unitController,
-                        labelText: 'Satuan (ex: gelas, menit)',
+                        labelText: 'Satuan (ex:gelas,menit)',
                         validator: (value) {
                           if (_targetValueController.text != '1' && (value == null || value.isEmpty)) {
                             return 'Satuan wajib jika target > 1';
