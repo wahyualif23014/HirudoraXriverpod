@@ -6,9 +6,9 @@ import 'package:hirudorax/features/habits/data/providers/habit_providers.dart';
 import 'package:hirudorax/features/habits/presentation/widgets/habit_list_item.dart';
 
 import '../../../../core/widgets/app_scaffold.dart';
-import '../../../../core/widgets/glass_container.dart'; // Jika ingin pakai glassmorphism
+import '../../../../core/widgets/glass_container.dart'; 
 import '../../../../app/themes/colors.dart';
-import '../../../../app/routes/routes.dart'; // Untuk navigasi GoRouter
+import '../../../../app/routes/routes.dart'; 
 
 class HabitsPage extends ConsumerWidget {
   const HabitsPage({super.key});
@@ -62,57 +62,63 @@ class HabitsPage extends ConsumerWidget {
         onPressed: () => context.go(AppRoutes.homePath),
         tooltip: 'Kembali ke Beranda',
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.add_rounded, color: AppColors.primaryText),
-          onPressed: () => context.push(AppRoutes.addHabitPath), // Gunakan context.push untuk add
-          tooltip: 'Tambah Kebiasaan Baru',
-        ),
-      ],
-      body: RefreshIndicator( // Tambahkan RefreshIndicator
+      // actions: [
+      //   IconButton(
+      //     icon: const Icon(Icons.add_rounded, color: AppColors.primaryText),
+      //     onPressed: () => context.push(AppRoutes.addHabitPath), // Gunakan context.push untuk add
+      //     tooltip: 'Tambah Kebiasaan Baru',
+      //   ),
+      // ],
+      body: RefreshIndicator( // RefreshIndicator
         onRefresh: _refreshData,
         color: AppColors.accentPurple,
         backgroundColor: AppColors.secondaryBackground,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Kebiasaan Saya',
+                '',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryText),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 35),
 
               // Ringkasan Harian Kebiasaan
               _buildDailySummaryCard(context, dailyHabitSummary),
-              const SizedBox(height: 30),
+              const SizedBox(height: 25),
 
-              Text(
-                'Daftar Kebiasaan',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryText),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Daftar Kebiasaan',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryText),
+                  ),
+                  const SizedBox(height: 10),
+                ],
               ),
-              const SizedBox(height: 15),
-
               Expanded(
                 child: habitsAsyncValue.when(
                   data: (habits) {
                     if (habits.isEmpty) {
-                      return ListView( // Gunakan ListView agar RefreshIndicator tetap berfungsi
+                      return ListView( 
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: [
                           GlassContainer( // Gunakan GlassContainer seperti contoh Anda
                             borderRadius: 15,
-                            padding: const EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(16),
                             linearGradientColors: [
-                              AppColors.accentPurple.withOpacity(0.2),
-                              AppColors.secondaryBackground.withOpacity(0.1),
+                              AppColors.accentPurple.withOpacity(0.10,),
+                              AppColors.secondaryBackground.withOpacity(0.25),
+                              AppColors.accentPurple.withOpacity(0.10,),
                             ],
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Anda belum memiliki kebiasaan yang dilacak.',
+                                  'Belum ada kebiasaan yang dilacak',
+                                  textAlign: TextAlign.center,
                                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                     color: AppColors.secondaryText,
                                   ),
@@ -123,7 +129,7 @@ class HabitsPage extends ConsumerWidget {
                                     context.push(AppRoutes.addHabitPath); // Gunakan context.push
                                   },
                                   icon: const Icon(Icons.add_rounded, color: AppColors.primaryText),
-                                  label: Text('Tambah Kebiasaan Baru', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.primaryText)),
+                                  label: Text('Tambah Kebiasaan', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.primaryText)),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.accentPurple.withOpacity(0.8),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -132,18 +138,18 @@ class HabitsPage extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          Padding( // Padding untuk teks "Belum ada kebiasaan" jika ada
-                            padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
-                            child: Center(
-                              child: Text(
-                                'Mulai lacak kebiasaan Anda sekarang!',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.tertiaryText,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
+                          // Padding( // Padding untuk teks "Belum ada kebiasaan" jika ada
+                          //   padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
+                          //   child: Center(
+                          //     child: Text(
+                          //       'Mulai lacak kebiasaan Anda sekarang!',
+                          //       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          //         color: AppColors.tertiaryText,
+                          //       ),
+                          //       textAlign: TextAlign.center,
+                          //     ),
+                          //   ),
+                          // ),
                         ],
                       );
                     }
@@ -206,7 +212,7 @@ class HabitsPage extends ConsumerWidget {
       ],
       customBorder: Border.all(color: AppColors.glassBackgroundStart.withOpacity(0.2), width: 1),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             'Ringkasan Hari Ini',
