@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'app/app.dart'; // Mengarah ke widget App() Anda
+import 'app/app.dart'; 
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:intl/date_symbol_data_local.dart'; // <--- Tambahkan import ini
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,12 +23,11 @@ void main() async {
   );
 
   // --- SOLUSI UNTUK LocaleDataException ---
-  // Inisialisasi data locale untuk bahasa Indonesia
-  await initializeDateFormatting('id_ID', null); // <--- Tambahkan baris ini
+  await initializeDateFormatting('id_ID', null); 
 
   runApp(
     const ProviderScope(
-      child: App(), // MyApp Anda yang berisi MaterialApp atau GoRouter.
+      child: App(), 
     ),
   );
 }
