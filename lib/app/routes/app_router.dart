@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hirudorax/features/activities/domain/entity/activity_entity.dart';
 import 'package:hirudorax/features/activities/presentation/pages/activity_detail_page.dart';
 import 'package:hirudorax/features/activities/presentation/pages/add_activity_page.dart';
 import 'package:hirudorax/features/habits/domain/entities/habit_entity.dart';
@@ -45,8 +46,7 @@ import 'routes.dart';
 // --- Provider untuk GoRouter ---
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation:
-        AppRoutes.homePath, 
+    initialLocation: AppRoutes.homePath,
 
     // redirect: (BuildContext context, GoRouterState state) { /* ... */ },
     routes: <GoRoute>[
@@ -63,9 +63,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'add-transaction', // Nested: /finance/add-transaction
-            builder:
-                (context, state) =>
-                    const AddTransactionPage(), 
+            builder: (context, state) => const AddTransactionPage(),
           ),
           GoRoute(
             path: 'budgets', // Nested: /finance/budgets
@@ -82,24 +80,28 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // --- Activities Feature Routes ---
       GoRoute(
-        path: AppRoutes.activitiesHubPath, 
-        builder:
-            (context, state) =>
-                const ActivitiesPage(), 
+        path: '/activities', // Path: /activities (sudah ada)
+        name: AppRoutes.activitiesHubPath, // Beri nama untuk praktik terbaik
+        builder: (context, state) => const ActivitiesPage(),
         routes: [
           GoRoute(
-            path: 'add', // Nested: /activities/add
-            builder:
-                (context, state) =>
-                    const AddActivityPage(), // Menggunakan halaman tambah
+            path: 'add', // /activities/add
+            name: AppRoutes.addActivityPath,
+            builder: (context, state) {
+              // Ambil data 'extra' yang mungkin dikirim
+              final ActivityEntity? editingActivity =
+                  state.extra as ActivityEntity?;
+              // Kirim ke AddActivityPage
+              return AddActivityPage(editingActivity: editingActivity);
+            },
           ),
+          // --- TAMBAHKAN BLOK INI ---
           GoRoute(
             path: ':id', // Nested: /activities/:id
+            name: 'activityDetail', // Beri nama untuk praktik terbaik
             builder: (context, state) {
-              final activityId = state.pathParameters['id'];
-              return ActivityDetailPage(
-                activityId: activityId!,
-              );
+              final activityId = state.pathParameters['id']!;
+              return ActivityDetailPage(activityId: activityId);
             },
           ),
         ],
@@ -107,26 +109,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // --- Habits Feature Routes (DI-UNCOMMENT SELURUH BLOK INI) ---
       GoRoute(
-      path: AppRoutes.habitsHubPath, // Path: /habits
-      builder: (context, state) => const HabitsPage(), 
-      routes: [
-        GoRoute(
-          path: 'add', // Nested: /habits/add
-          builder: (context, state) {
-            final HabitEntity? editingHabit = state.extra as HabitEntity?;
-            return AddHabitPage(editingHabit: editingHabit);
-          },
-        ),
-        GoRoute(
-          path: ':id', // Nested: /habits/:id
-          name: 'habitDetail',
-          builder: (context, state) {
-            final habitId = state.pathParameters['id']!;
-            return HabitDetailPage(habitId: habitId);
-          },
-        ),
-      ],
-    ),
+        path: AppRoutes.habitsHubPath, // Path: /habits
+        builder: (context, state) => const HabitsPage(),
+        routes: [
+          GoRoute(
+            path: 'add', // Nested: /habits/add
+            builder: (context, state) {
+              final HabitEntity? editingHabit = state.extra as HabitEntity?;
+              return AddHabitPage(editingHabit: editingHabit);
+            },
+          ),
+          GoRoute(
+            path: ':id', // Nested: /habits/:id
+            name: 'habitDetail',
+            builder: (context, state) {
+              final habitId = state.pathParameters['id']!;
+              return HabitDetailPage(habitId: habitId);
+            },
+          ),
+        ],
+      ),
 
       // --- Goals Feature Routes (Ini sudah OK) ---
       GoRoute(

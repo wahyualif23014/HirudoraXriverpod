@@ -111,6 +111,29 @@ class ActivityListNotifier extends AsyncNotifier<List<ActivityEntity>> {
       );
     });
   }
+  // --- TAMBAHKAN FUNGSI BARU DI SINI ---
+  Future<void> updateActivity(ActivityEntity updatedActivity) async {
+    final previousState = state.valueOrNull ?? [];
+
+    // 1. Optimistic Update: Perbarui UI secara langsung
+    state = AsyncData([
+      for (final activity in previousState)
+        if (activity.id == updatedActivity.id)
+          updatedActivity.copyWith(updatedAt: DateTime.now()) // Pastikan updatedAt diperbarui
+        else
+          activity,
+    ]);
+
+    // 2. Lakukan operasi di background
+    try {
+      final activityRepository = ref.read(activityRepositoryProvider);
+      // Kirim updatedActivity yang sudah memiliki updatedAt baru
+      await activityRepository.updateActivity(state.value!.firstWhere((a) => a.id == updatedActivity.id));
+    } catch (e) {
+      // 3. Jika gagal, kembalikan state ke semula
+      state = AsyncError<List<ActivityEntity>>(e, StackTrace.current).copyWithPrevious(AsyncData(previousState));
+    }
+  }
 }
 
 // Provider untuk ActivityListNotifier

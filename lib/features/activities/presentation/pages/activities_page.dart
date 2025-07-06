@@ -8,126 +8,189 @@ import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
 import '../../../../app/routes/routes.dart';
-
-import 'activity_list_page.dart';
+import '../../../../app/themes/app_theme.dart';
+import '../widgets/activity_list_item.dart'; // <- Impor widget baru
+import 'activity_list_notifier.dart'; // <- Impor provider
 
 class ActivitiesPage extends ConsumerWidget {
   const ActivitiesPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final activityListAsync = ref.watch(activityListNotifierProvider);
+
     return AppScaffold(
-      const SizedBox(height: 15),
-      leading: IconButton(
-        icon: const Icon(
-          Icons.arrow_back_ios_rounded,
-          color: AppColors.primaryText,
-        ), 
-        onPressed: () {
-          context.go(AppRoutes.homePath);
-        },
-      ),
-      title: 'Aktivitas Saya',
+      const SizedBox(height: 5),
       body: CustomScrollView(
         slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 16.0,
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: 80.0,
+            backgroundColor: AppColors.primaryBackground.withOpacity(0.85),
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(
+                Icons.arrow_back_ios_rounded,
+                color: AppColors.primaryText,
+              ),
+              onPressed: () => context.go(AppRoutes.homePath),
+              tooltip: 'Kembali ke Beranda',
             ),
-            sliver: SliverToBoxAdapter(
-              child: GlassContainer(
-                borderRadius: 15,
-                padding: const EdgeInsets.all(20),
-                blur: 10,
-                opacity: 0.15,
-                linearGradientColors: [
-                  AppColors.accentOrange.withOpacity(0.2),
-                  AppColors.secondaryBackground.withOpacity(0.1),
-                ],
-                customBorder: Border.all(
-                  color: AppColors.accentOrange.withOpacity(0.3),
-                  width: 1,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.headlineSmall?.copyWith(
-                        color: AppColors.primaryText,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Catat aktivitas harian Anda untuk melihat progress dan memastikan semua selesai tepat waktu.',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.secondaryText,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        context.go(
-                          AppRoutes.addActivityPath,
-                        ); 
-                      },
-                      icon: const Icon(
-                        Icons.add_rounded,
-                        color: AppColors.primaryText,
-                      ),
-                      label: Text(
-                        'Tambah Aktivitas Baru',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.primaryText,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accentOrange.withOpacity(
-                          0.7,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          side: BorderSide(
-                            color: AppColors.primaryText.withOpacity(0.2),
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                      ),
-                    ),
-                  ],
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 60, bottom: 16),
+              title: Text(
+                'Aktivitas Saya',
+                style: AppTextStyles.titleLarge.copyWith(
+                  color: AppColors.primaryText,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+              background: Container(color: AppColors.primaryBackground),
             ),
           ),
-
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 15.0),
-            sliver: SliverToBoxAdapter(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              child: _buildHeaderCard(context),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 10.0),
               child: Text(
-                'Daftar Aktivitas',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                'Daftar Tugas',
+                style: AppTextStyles.titleLarge.copyWith(
+                  fontWeight: FontWeight.bold,
                   color: AppColors.primaryText,
                 ),
               ),
             ),
           ),
-          ActivityListPage().build(context, ref),
+          activityListAsync.when(
+            data: (activities) {
+              if (activities.isEmpty) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _buildEmptyState(context),
+                  ),
+                );
+              }
+              return SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+                sliver: SliverList.builder(
+                  itemCount: activities.length,
+                  itemBuilder: (context, index) {
+                    final activity = activities[index];
+                    return ActivityListItem(
+                      activity: activity,
+                      onTap: () {
+                        // TODO: Implement navigation or action when tapping the activity item
+                        context.push(
+                          AppRoutes.activityDetailPath(activity.id),
+                          extra: activity,
+                        );
+                      },
+                      onToggleComplete: () {
+                        ref
+                            .read(activityListNotifierProvider.notifier)
+                            .toggleActivityCompletion(activity);
+                      },
+                      onEdit: () {
+                        context.push(
+                          AppRoutes.addActivityPath,
+                          extra: activity,
+                        );
+                      },
+                      onDelete: () {
+                        ref
+                            .read(activityListNotifierProvider.notifier)
+                            .deleteActivity(activity.id);
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+            loading:
+                () => const SliverFillRemaining(
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.accentOrange,
+                    ),
+                  ),
+                ),
+            error:
+                (err, st) => SliverFillRemaining(
+                  child: Center(child: Text('Error: $err')),
+                ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.go(AppRoutes.addActivityPath);
-        },
-        child: const Icon(Icons.add_rounded, color: AppColors.primaryText),
+        onPressed: () => context.push(AppRoutes.addActivityPath),
         backgroundColor: AppColors.accentOrange,
-        tooltip: 'Add Activity New',
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add_rounded, size: 30),
+        tooltip: 'Tambah Aktivitas Baru',
+      ),
+    );
+  }
+
+  Widget _buildHeaderCard(BuildContext context) {
+    return GlassContainer(
+      borderRadius: 20,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Kelola Tugasmu',
+            style: AppTextStyles.titleMedium.copyWith(
+              color: AppColors.primaryText,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Catat semua tugas harian Anda di sini agar tidak ada yang terlewat dan tetap produktif.',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.secondaryText,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return GlassContainer(
+      borderRadius: 20,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.check_box_outline_blank_rounded,
+            color: AppColors.accentOrange,
+            size: 50,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Belum Ada Tugas',
+            style: AppTextStyles.titleMedium.copyWith(
+              color: AppColors.primaryText,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tekan tombol + untuk mencatat tugas pertamamu.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.secondaryText,
+            ),
+          ),
+        ],
       ),
     );
   }

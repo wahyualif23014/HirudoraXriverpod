@@ -3,15 +3,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
+import '../../domain/entity/activity_entity.dart'; // <- Pastikan import entity
+
 
 import '../../../../core/widgets/app_scaffold.dart';
-import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
-import '../../presentation/pages/activity_list_notifier.dart'; 
+import '../../../../app/themes/app_theme.dart';
+import './activity_list_notifier.dart';
 
 class AddActivityPage extends ConsumerStatefulWidget {
-  const AddActivityPage({super.key});
+  // <-- PERUBAHAN 1: Tambahkan properti untuk menampung data yang akan diedit
+  final ActivityEntity? editingActivity;
+
+  const AddActivityPage({
+    super.key,
+    this.editingActivity, // Jadikan opsional di constructor
+  });
+
 
   @override
   ConsumerState<AddActivityPage> createState() => _AddActivityPageState();
@@ -19,21 +28,201 @@ class AddActivityPage extends ConsumerStatefulWidget {
 
 class _AddActivityPageState extends ConsumerState<AddActivityPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+
   DateTime? _selectedDueDate;
   int _selectedPriority = 3; // Default Low
   List<String> _selectedTags = [];
 
-  // List pilihan prioritas dan tag (bisa disesuaikan atau diambil dari provider/API)
   final List<String> _priorityOptions = ['High', 'Medium', 'Low'];
   final List<String> _tagOptions = ['Work', 'Personal', 'Study', 'Health', 'Shopping'];
+
+  // <-- PERUBAHAN 2: Tambahkan getter untuk mempermudah pengecekan mode edit
+  bool get isEditing => widget.editingActivity != null;
+
+  @override
+  void initState() {
+    super.initState();
+    // <-- PERUBAHAN 3: Jika ini mode edit, isi semua field dengan data yang ada
+    if (isEditing) {
+      final activity = widget.editingActivity!;
+      _titleController.text = activity.title;
+      _descriptionController.text = activity.description;
+      _selectedDueDate = activity.dueDate;
+      _selectedPriority = activity.priority;
+      _selectedTags = List.from(activity.tags); // Buat salinan agar tidak memodifikasi state asli
+    }
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  // <-- PERUBAHAN 4: Ubah nama fungsi menjadi _saveActivity untuk menangani kedua kasus
+  void _saveActivity() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final activityNotifier = ref.read(activityListNotifierProvider.notifier);
+    try {
+      if (isEditing) {
+        // --- LOGIKA UNTUK UPDATE ---
+        final updatedActivity = widget.editingActivity!.copyWith(
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim(),
+          priority: _selectedPriority,
+          tags: _selectedTags,
+          dueDate: _selectedDueDate,
+        );
+        // Panggil fungsi update dari notifier (yang akan kita pastikan ada)
+        await activityNotifier.updateActivity(updatedActivity);
+        
+      } else {
+        // --- LOGIKA UNTUK ADD (TETAP SAMA) ---
+        await activityNotifier.addActivity(
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim(),
+          priority: _selectedPriority,
+          tags: _selectedTags,
+          dueDate: _selectedDueDate,
+        );
+      }
+
+      if (mounted) {
+        // Pesan dinamis sesuai mode
+        final message = isEditing ? 'Aktivitas berhasil diperbarui!' : 'Aktivitas berhasil ditambahkan!';
+        context.pop();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: AppColors.accentGreen));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: ${e.toString()}'), backgroundColor: AppColors.error));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppScaffold(
+      const SizedBox(height: 5),
+      body: Column(
+        children: [
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  pinned: true,
+                  elevation: 0,
+                  backgroundColor: AppColors.primaryBackground.withOpacity(0.85),
+                  centerTitle: true,
+                  // <-- PERUBAHAN 5: Judul dinamis sesuai mode
+                  title: Text(
+                    isEditing ? 'Edit Aktivitas' : 'Aktivitas Baru',
+                    style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  leading: IconButton(
+                    icon: const Icon(Icons.close_rounded, color: AppColors.primaryText),
+                    onPressed: () => context.pop(),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Tidak ada perubahan di dalam form, semua helper widget tetap sama
+                          _buildTextField(
+                            controller: _titleController,
+                            labelText: 'Judul Aktivitas',
+                            validator: (v) => (v == null || v.isEmpty) ? 'Judul tidak boleh kosong' : null,
+                          ),
+                          const SizedBox(height: 20),
+                          _buildTextField(
+                            controller: _descriptionController,
+                            labelText: 'Deskripsi (Opsional)',
+                            maxLines: 3,
+                          ),
+                          const SizedBox(height: 24),
+                          Text('Detail', style: AppTextStyles.titleMedium.copyWith(color: AppColors.secondaryText)),
+                          const SizedBox(height: 12),
+                          _buildDatePickerField(context),
+                          const SizedBox(height: 20),
+                          _buildPriorityDropdown(),
+                          const SizedBox(height: 24),
+                          Text('Tags (Opsional)', style: AppTextStyles.titleMedium.copyWith(color: AppColors.secondaryText)),
+                          const SizedBox(height: 12),
+                          _buildTagsSelection(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Panggil helper untuk tombol
+          _buildActionButtons(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBackground,
+        border: Border(top: BorderSide(color: AppColors.tertiaryText.withOpacity(0.2), width: 1)),
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          // <-- PERUBAHAN 6: Panggil fungsi _saveActivity yang sudah pintar
+          onPressed: _saveActivity,
+          icon: const Icon(Icons.check_rounded, color: Colors.white),
+          // <-- PERUBAHAN 7: Teks tombol dinamis
+          label: Text(
+            isEditing ? 'Simpan Perubahan' : 'Simpan Aktivitas',
+            style: AppTextStyles.bodyLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.accentOrange,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- Semua helper widget di bawah ini tidak perlu diubah ---
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      style: const TextStyle(color: AppColors.primaryText),
+      decoration: InputDecoration(
+        labelText: labelText,
+        labelStyle: AppTextStyles.bodyLarge.copyWith(color: AppColors.secondaryText),
+        filled: true,
+        fillColor: AppColors.secondaryBackground,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.tertiaryText.withOpacity(0.3))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: AppColors.accentOrange, width: 2)),
+      ),
+      validator: validator,
+    );
   }
 
   Future<void> _selectDueDate(BuildContext context) async {
@@ -44,311 +233,96 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
       lastDate: DateTime(2101),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith( 
-            colorScheme: ColorScheme.dark(
-              primary: AppColors.accentOrange, 
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppColors.accentOrange,
               onPrimary: AppColors.primaryText,
-              onSurface: AppColors.primaryText,
               surface: AppColors.secondaryBackground,
+              onSurface: AppColors.primaryText,
             ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primaryText,
-              ),
-            ),
+            dialogBackgroundColor: AppColors.primaryBackground,
           ),
           child: child!,
         );
       },
     );
-    if (picked != null && picked != _selectedDueDate) {
-      setState(() {
-        _selectedDueDate = picked;
-      });
-    }
+    if (picked != null) setState(() => _selectedDueDate = picked);
   }
 
-  void _addActivity() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-
-      // Dapatkan notifier dari provider
-      final activityNotifier = ref.read(activityListNotifierProvider.notifier);
-
-      try {
-        await activityNotifier.addActivity(
-          title: _titleController.text,
-          description: _descriptionController.text,
-          priority: _selectedPriority,
-          tags: _selectedTags,
-          dueDate: _selectedDueDate,
-        );
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Aktivitas berhasil ditambahkan!')),
-          );
-          context.pop(); 
-        }
-      } catch (e) {
-        // Try cacht
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gagal menambahkan aktivitas: ${e.toString()}')),
-          );
-        }
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AppScaffold(
-      const SizedBox(height: 15),
-      title: 'Tambah Aktivitas Baru',
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GlassContainer(
-                borderRadius: 15,
-                padding: const EdgeInsets.all(20),
-                linearGradientColors: [
-                  AppColors.secondaryBackground.withOpacity(0.2),
-                  AppColors.secondaryBackground.withOpacity(0.1),
-                ],
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Detail Aktivitas',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryText),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: _titleController,
-                      labelText: 'Judul Aktivitas',
-                      hintText: 'Contoh: Rapat Harian Tim',
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Judul tidak boleh kosong';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: _descriptionController,
-                      labelText: 'Deskripsi (Opsional)',
-                      hintText: 'Tambahkan detail aktivitas...',
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildDatePickerField(context),
-                    const SizedBox(height: 16),
-                    _buildPriorityDropdown(),
-                    const SizedBox(height: 16),
-                    _buildTagsSelection(),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _addActivity,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accentOrange,
-                          foregroundColor: AppColors.primaryText,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(
-                          'Simpan Aktivitas',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primaryText
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // --- Reusable Widget for Text Field (Consistent Theme) ---
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String labelText,
-    String? hintText,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      style: TextStyle(color: AppColors.primaryText),
-      decoration: InputDecoration(
-        labelText: labelText,
-        hintText: hintText,
-        labelStyle: TextStyle(color: AppColors.secondaryText),
-        hintStyle: TextStyle(color: AppColors.tertiaryText),
-        filled: true,
-        fillColor: AppColors.secondaryBackground.withOpacity(0.4),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.accentBlue.withOpacity(0.3), width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.accentOrange.withOpacity(0.5), width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.error.withOpacity(0.7), width: 1),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.error, width: 2),
-        ),
-      ),
-      validator: validator,
-    );
-  }
-
-  // --- Reusable Widget for Date Picker Field ---
   Widget _buildDatePickerField(BuildContext context) {
     return InkWell(
       onTap: () => _selectDueDate(context),
       child: InputDecorator(
         decoration: InputDecoration(
-          labelText: 'Tanggal Jatuh Tempo (Opsional)',
-          labelStyle: TextStyle(color: AppColors.secondaryText),
           filled: true,
-          fillColor: AppColors.secondaryBackground.withOpacity(0.4),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: AppColors.accentBlue.withOpacity(0.3), width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: AppColors.accentOrange.withOpacity(0.5), width: 2),
-          ),
-          suffixIcon: Icon(Icons.calendar_today_rounded, color: AppColors.tertiaryText),
+          fillColor: AppColors.secondaryBackground,
+          labelText: 'Tanggal Jatuh Tempo',
+          labelStyle: AppTextStyles.bodyLarge.copyWith(color: AppColors.secondaryText),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.tertiaryText.withOpacity(0.3))),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: AppColors.accentOrange, width: 2)),
+          suffixIcon: const Icon(Icons.calendar_today, color: AppColors.tertiaryText),
         ),
         child: Text(
-          _selectedDueDate == null
-              ? 'Pilih tanggal'
-              : DateFormat('dd MMMM yyyy').format(_selectedDueDate!),
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: _selectedDueDate == null ? AppColors.tertiaryText : AppColors.primaryText,
-          ),
+          _selectedDueDate == null ? 'Tidak diatur' : DateFormat('dd MMMM yyyy').format(_selectedDueDate!),
+          style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText),
         ),
       ),
     );
   }
 
-  // --- Reusable Widget for Priority Dropdown ---
   Widget _buildPriorityDropdown() {
     return DropdownButtonFormField<int>(
       value: _selectedPriority,
       decoration: InputDecoration(
         labelText: 'Prioritas',
-        labelStyle: TextStyle(color: AppColors.secondaryText),
         filled: true,
-        fillColor: AppColors.secondaryBackground.withOpacity(0.4),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.accentBlue.withOpacity(0.3), width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.accentOrange.withOpacity(0.5), width: 2),
-        ),
+        fillColor: AppColors.secondaryBackground,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.tertiaryText.withOpacity(0.3))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: AppColors.accentOrange, width: 2)),
       ),
-      dropdownColor: AppColors.secondaryBackground, // Warna dropdown 
-      style: TextStyle(color: AppColors.primaryText), // Warna teks item dropdown
-      items: List.generate(_priorityOptions.length, (index) {
-        return DropdownMenuItem(
-          value: index + 1, 
-          child: Text(
-            _priorityOptions[index],
-            style: TextStyle(
-              color: index == 0 ? Colors.redAccent : (index == 1 ? Colors.orangeAccent : Colors.lightGreen),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+      dropdownColor: AppColors.secondaryBackground,
+      style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText),
+      items: _priorityOptions.map((String value) {
+        return DropdownMenuItem<int>(
+          value: _priorityOptions.indexOf(value) + 1,
+          child: Text(value),
         );
-      }),
-      onChanged: (value) {
-        if (value != null) {
-          setState(() {
-            _selectedPriority = value;
-          });
-        }
+      }).toList(),
+      onChanged: (int? newValue) {
+        setState(() {
+          _selectedPriority = newValue!;
+        });
       },
     );
   }
 
-  // --- Reusable Widget for Tags Selection ---
   Widget _buildTagsSelection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Tags (Opsional)',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.secondaryText),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8.0,
-          runSpacing: 8.0,
-          children: _tagOptions.map((tag) {
-            final isSelected = _selectedTags.contains(tag);
-            return FilterChip(
-              label: Text(tag),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedTags.add(tag);
-                  } else {
-                    _selectedTags.remove(tag);
-                  }
-                });
-              },
-              selectedColor: AppColors.accentOrange.withOpacity(0.5),
-              backgroundColor: AppColors.secondaryBackground.withOpacity(0.4),
-              labelStyle: TextStyle(color: isSelected ? AppColors.primaryText : AppColors.secondaryText),
-              checkmarkColor: AppColors.primaryText,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: AppColors.accentBlue.withOpacity(0.3)),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 4.0,
+      children: _tagOptions.map((tag) {
+        final isSelected = _selectedTags.contains(tag);
+        return FilterChip(
+          label: Text(tag),
+          selected: isSelected,
+          onSelected: (bool selected) {
+            setState(() {
+              if (selected) {
+                _selectedTags.add(tag);
+              } else {
+                _selectedTags.remove(tag);
+              }
+            });
+          },
+          selectedColor: AppColors.accentOrange.withOpacity(0.5),
+          backgroundColor: AppColors.secondaryBackground.withOpacity(0.4),
+          labelStyle: TextStyle(color: isSelected ? AppColors.primaryText : AppColors.secondaryText, fontWeight: FontWeight.w500),
+          checkmarkColor: AppColors.primaryText,
+          side: BorderSide(color: isSelected ? AppColors.accentOrange : AppColors.tertiaryText.withOpacity(0.3)),
+        );
+      }).toList(),
     );
   }
 }
