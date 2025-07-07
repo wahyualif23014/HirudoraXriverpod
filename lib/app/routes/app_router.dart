@@ -29,8 +29,8 @@ import '../../features/activities/presentation/pages/activities_page.dart';
 
 // Halaman Fitur Habits (DI-UNCOMMENT)
 import '../../features/habits/presentation/page/habits_page.dart';
-import '../../features/habits/presentation/page/add_habit_page.dart';
-import '../../features/habits/presentation/page/habit_detail_page.dart';
+// import '../../features/habits/presentation/page/add_habit_page.dart';
+// import '../../features/habits/presentation/page/habit_detail_page.dart';
 
 // Halaman Fitur Goals (Placeholder)
 // import '../../features/goals/presentation/pages/goals_page.dart';

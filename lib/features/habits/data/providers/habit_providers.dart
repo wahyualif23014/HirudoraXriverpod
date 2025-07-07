@@ -1,12 +1,12 @@
 // lib/features/habits/data/providers/habit_providers.dart
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hirudorax/features/activities/data/provider/activity_providers.dart';
+// import 'package:hirudorax/features/activities/data/provider/activity_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // import entities
 import '../../domain/entities/habit_entity.dart';
-import '../../domain/repositories/habits_repository.dart';
+// import '../../domain/repositories/habits_repository.dart';
 
 // datasource
 import '../datasource/habit_remote_data_source.dart';
