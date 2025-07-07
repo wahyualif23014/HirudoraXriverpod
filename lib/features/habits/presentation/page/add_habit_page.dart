@@ -46,7 +46,7 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
         _selectedReminderTime = TimeOfDay.fromDateTime(widget.editingHabit!.reminderTime!);
       }
     } else {
-      _targetValueController.text = '1'; // Default value for new habit
+      _targetValueController.text = '1'; 
     }
   }
 
