@@ -2,14 +2,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:simple_animations/simple_animations.dart';
 
-// Model untuk satu meteor
 class Meteor {
   double x;
   double y;
   double speed;
   double size;
   Color color;
-  final trail = <Offset>[]; // Untuk menyimpan jejak ekornya
+  final trail = <Offset>[];
 
   Meteor({
     required this.x,
@@ -21,7 +20,6 @@ class Meteor {
 
   // Fungsi untuk update posisi meteor
   void update() {
-    // Simpan posisi sebelumnya untuk jejak
     trail.add(Offset(x, y));
     if (trail.length > 10) { // Batasi panjang ekor
       trail.removeAt(0);
