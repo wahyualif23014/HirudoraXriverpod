@@ -60,6 +60,7 @@ dependencies:
   firebase_performance: ^0.10.1+7
   supabase_flutter: ^2.9.1
   dartz: ^0.10.1
+  simple_animations: ^5.0.2
 
 dev_dependencies:
   flutter_test:
