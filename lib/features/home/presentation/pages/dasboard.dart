@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'dart:ui';
 
 import '../../../../core/widgets/app_scaffold.dart';
-import '../../../../core/widgets/glass_container.dart';
+// import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
 import '../../../../app/routes/routes.dart';
 // provider
@@ -225,7 +225,7 @@ class DashboardPage extends ConsumerWidget {
                   context,
                   title: 'Activities Progress',
                   subtitle:
-                      'Error loading activities: ${error.toString().split(':')[0]}', // Sederhanakan pesan error
+                      'Error loading activities: ${error.toString().split(':')[0]}', 
                   icon: Icons.run_circle_rounded,
                   iconColor: AppColors.accentOrange,
                   onTap: () => context.go(AppRoutes.activitiesHubPath),
@@ -325,7 +325,7 @@ class DashboardPage extends ConsumerWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), // Efek blur
+        filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), 
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
