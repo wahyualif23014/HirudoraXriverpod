@@ -25,7 +25,6 @@ class Meteor {
       trail.removeAt(0);
     }
 
-    // Gerakkan meteor ke bawah secara diagonal
     x -= speed / 2;
     y += speed;
   }
