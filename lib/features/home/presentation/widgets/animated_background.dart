@@ -30,7 +30,6 @@ class Meteor {
   }
 }
 
-// Widget utama untuk background animasi
 class AnimatedMeteorsBackground extends StatefulWidget {
   const AnimatedMeteorsBackground({super.key});
 
