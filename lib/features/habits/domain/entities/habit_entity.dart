@@ -71,7 +71,7 @@ class HabitEntity extends Equatable {
 class HabitCompletionEntity extends Equatable {
   final String id;
   final String habitId;
-  final String? userId; // <--- UBAH: Jadikan nullable juga
+  final String? userId; 
   final DateTime completionDate;
   final int actualValue;
   final DateTime completedAt;
@@ -79,7 +79,7 @@ class HabitCompletionEntity extends Equatable {
   const HabitCompletionEntity({
     this.id = '',
     required this.habitId,
-    this.userId, // <--- UBAH: Tidak lagi required
+    this.userId, 
     required this.completionDate,
     this.actualValue = 1,
     required this.completedAt,
