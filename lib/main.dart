@@ -22,7 +22,6 @@ void main() async {
     debug: true,
   );
 
-  // --- SOLUSI UNTUK LocaleDataException ---
   await initializeDateFormatting('id_ID', null); 
 
   runApp(
