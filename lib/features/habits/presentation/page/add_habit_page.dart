@@ -14,7 +14,7 @@ import '../../domain/entities/habit_entity.dart';
 import '../../data/providers/habit_providers.dart';
 
 class AddHabitPage extends ConsumerStatefulWidget {
-  final HabitEntity? editingHabit; // Untuk mode edit
+  final HabitEntity? editingHabit; 
   const AddHabitPage({super.key, this.editingHabit});
 
   @override
