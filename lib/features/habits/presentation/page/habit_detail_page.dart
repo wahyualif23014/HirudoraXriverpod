@@ -79,10 +79,11 @@ class HabitDetailPage extends ConsumerWidget {
                   slivers: [
                     // --- AppBar Dinamis ---
                     SliverAppBar(
-                      pinned: true, // AppBar akan tetap terlihat saat scroll
+                      pinned: true, 
                       floating: false,
                       elevation: 0,
-                      backgroundColor: AppColors.primaryBackground.withOpacity(0.8), // Efek transparan saat scroll
+                      // seperti nya ndek sini ora perlu
+                      backgroundColor: AppColors.primaryBackground.withOpacity(0.8),  
                       centerTitle: true,
                       title: Text('Detail Kebiasaan', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryText)),
                       leading: IconButton(
@@ -105,7 +106,7 @@ class HabitDetailPage extends ConsumerWidget {
                             _buildInfoSection(context, habit),
                             const SizedBox(height: 24),
                             _buildHistorySection(context, completionsAsyncValue as AsyncValue<dynamic>, habit),
-                            const SizedBox(height: 24), // Beri ruang sebelum akhir scroll
+                            const SizedBox(height: 24), 
                           ],
                         ),
                       ),
@@ -113,7 +114,6 @@ class HabitDetailPage extends ConsumerWidget {
                   ],
                 ),
               ),
-              // --- Tombol Aksi "Sticky" di Bawah ---
               _buildActionButtons(context, ref, habit),
             ],
           );
@@ -126,7 +126,7 @@ class HabitDetailPage extends ConsumerWidget {
     );
   }
 
-  // Widget terpisah untuk Header Habit
+  // Widget untuk Header Habit
   Widget _buildHabitHeader(BuildContext context, HabitEntity habit) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
