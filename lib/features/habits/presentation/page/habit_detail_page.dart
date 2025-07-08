@@ -147,10 +147,9 @@ class HabitDetailPage extends ConsumerWidget {
     );
   }
 
-  // Widget terpisah untuk Info Detail
+  // Widget untuk Info Detail
   Widget _buildInfoSection(BuildContext context, HabitEntity habit) {
     String frequencyText = '';
-    // ... (Logika frequencyText Anda tetap sama)
      switch (habit.frequency) {
         case HabitFrequency.daily:
           frequencyText = 'Setiap Hari';
@@ -189,7 +188,7 @@ class HabitDetailPage extends ConsumerWidget {
     );
   }
 
-  // Widget terpisah untuk Riwayat
+  // Widget untuk Riwayat
   Widget _buildHistorySection(BuildContext context, AsyncValue completionsAsyncValue, HabitEntity habit) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +219,6 @@ class HabitDetailPage extends ConsumerWidget {
 
             return Column(
               children: sortedDates.map((dateKey) {
-                // ... (Kode untuk menampilkan item riwayat Anda tetap sama)
                 final compsOnDate = groupedCompletions[dateKey]!;
                 final displayDate = DateFormat('dd MMMM yyyy', 'id_ID').format(DateTime.parse(dateKey));
                 return Padding(
@@ -276,10 +274,10 @@ class HabitDetailPage extends ConsumerWidget {
     );
   }
   
-  // Widget terpisah untuk Tombol Aksi di Bawah
+  // Widget untuk Tombol Aksi di Bawah
   Widget _buildActionButtons(BuildContext context, WidgetRef ref, HabitEntity habit) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32), // Padding lebih besar di bawah untuk safe area
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32), 
       decoration: BoxDecoration(
         color: AppColors.primaryBackground,
         border: Border(top: BorderSide(color: AppColors.tertiaryText.withOpacity(0.2), width: 1)),
