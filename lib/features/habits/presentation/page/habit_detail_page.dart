@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:collection/collection.dart'; // Untuk groupBy
+import 'package:collection/collection.dart';
 
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
@@ -18,7 +18,6 @@ class HabitDetailPage extends ConsumerWidget {
   final String habitId;
   const HabitDetailPage({super.key, required this.habitId});
 
-  // Helper untuk Konfirmasi Dialog Hapus (sama seperti HabitsHubPage)
   Future<bool> _showConfirmDeleteDialog(BuildContext context) async {
     return await showDialog(
       context: context,
@@ -55,7 +54,6 @@ class HabitDetailPage extends ConsumerWidget {
       );
     }));
 
-    // Dapatkan completion untuk habit ini
     final completionsAsyncValue = ref.watch(habitCompletionsStreamProvider.select((completionsAsync) {
       return completionsAsync.when(
         data: (completions) => AsyncData(completions.where((c) => c.habitId == habitId).toList()),
@@ -65,8 +63,7 @@ class HabitDetailPage extends ConsumerWidget {
     }));
 
     return AppScaffold(
-      const SizedBox(height: 5), // Placeholder, karena AppBar akan dihandle oleh CustomScrollView
-      // Matikan SafeArea di AppScaffold jika ada, kita handle manual
+      const SizedBox(height: 5), 
       body: (habitAsyncValue as AsyncValue).when(
         data: (habit) {
           if (habit == null) {
