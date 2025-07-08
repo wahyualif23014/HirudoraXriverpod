@@ -81,7 +81,7 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
     }
 
     final int targetValue = int.tryParse(_targetValueController.text) ?? 1;
-    _selectedDays.sort(); // Pastikan urutan hari konsisten
+    _selectedDays.sort(); 
 
     final habitToSave = HabitEntity(
       id: widget.editingHabit?.id ?? '',
