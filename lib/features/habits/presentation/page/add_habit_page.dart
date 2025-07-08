@@ -158,7 +158,7 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
     );
   }
 
-  // Widget terpisah untuk konten Form
+  // Widget konten Form
   Widget _buildFormContent() {
     return Form(
       key: _formKey,
@@ -228,7 +228,7 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
     );
   }
 
-  // Widget terpisah untuk pilihan Frekuensi
+  // Widget pilihan Frekuensi
   Widget _buildFrequencySection() {
     return GlassContainer(
       borderRadius: 15,
@@ -241,7 +241,7 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
     );
   }
 
-  // Widget terpisah untuk pilihan Hari
+  // Widget untuk pilihan Hari
   Widget _buildDaysOfWeekSection() {
     return GlassContainer(
       borderRadius: 15,
@@ -275,7 +275,7 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
     );
   }
 
-  // Widget terpisah untuk pilihan Reminder
+  // Widget pilihan Reminder
   Widget _buildReminderSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
