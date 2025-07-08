@@ -357,7 +357,6 @@ class HabitDetailPage extends ConsumerWidget {
 
   // Helper widget tidak berubah
   Widget _buildInfoCard(BuildContext context, {required String title, required List<Widget> children}) {
-      // ... (kode _buildInfoCard Anda tetap sama)
       return GlassContainer(
       borderRadius: 15,
       padding: const EdgeInsets.all(16),
@@ -381,7 +380,6 @@ class HabitDetailPage extends ConsumerWidget {
   }
 
   Widget _buildInfoRow(BuildContext context, String label, String value) {
-    // ... (kode _buildInfoRow Anda tetap sama)
      return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -396,8 +394,7 @@ class HabitDetailPage extends ConsumerWidget {
 }
 
 
-// Extension ini mungkin sudah tidak perlu jika Anda sudah punya di tempat lain
-// dan jika versi Dart/package collection Anda sudah mendukungnya secara default.
+
 extension ListExtension<T> on List<T> {
   T? firstWhereOrNull(bool Function(T element) test) {
     for (var element in this) {
