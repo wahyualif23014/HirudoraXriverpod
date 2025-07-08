@@ -107,7 +107,7 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
         // Pop dua kali jika halaman ini dibuka dari detail
         // Ini asumsi alur: Hub -> Detail -> Edit. Setelah edit, kembali ke Hub.
         // Jika alur bisa Hub -> Edit, maka logika navigasi perlu disesuaikan.
-        context.go('/habits'); // Kembali ke root habit hub untuk refresh data
+        context.go('/habits'); 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(widget.editingHabit == null ? 'Kebiasaan berhasil ditambahkan!' : 'Kebiasaan berhasil diperbarui!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryText)), backgroundColor: AppColors.accentGreen),
         );
