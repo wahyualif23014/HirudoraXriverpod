@@ -9,7 +9,7 @@ import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../../app/themes/colors.dart';
 import '../../../../app/routes/routes.dart';
-import '../../../../app/themes/app_theme.dart'; // Impor AppTextStyles
+import '../../../../app/themes/app_theme.dart'; 
 
 class HabitsPage extends ConsumerWidget {
   const HabitsPage({super.key});
@@ -69,7 +69,6 @@ class HabitsPage extends ConsumerWidget {
     final dailyHabitSummary = ref.watch(dailyHabitSummaryProvider);
 
     Future<void> _refreshData() async {
-      // Invalidate semua provider yang relevan
       ref.invalidate(habitsStreamProvider);
       ref.invalidate(dailyHabitSummaryProvider);
       ref.invalidate(habitCompletionsStreamProvider);
