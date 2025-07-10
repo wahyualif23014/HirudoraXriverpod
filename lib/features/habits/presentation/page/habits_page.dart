@@ -76,7 +76,7 @@ class HabitsPage extends ConsumerWidget {
     }
 
     return AppScaffold(
-      const SizedBox(height: 5), // Placeholder
+      const SizedBox(height: 5), 
       body: RefreshIndicator(
         onRefresh: _refreshData,
         color: AppColors.accentPurple,
@@ -85,7 +85,7 @@ class HabitsPage extends ConsumerWidget {
           slivers: [
             SliverAppBar(
               pinned: true,
-              expandedHeight: 80.0, // Tinggi area header besar
+              expandedHeight: 80.0, 
               backgroundColor: AppColors.primaryBackground.withOpacity(0.85),
               elevation: 0,
               leading: IconButton(
