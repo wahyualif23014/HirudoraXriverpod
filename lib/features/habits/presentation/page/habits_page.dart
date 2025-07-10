@@ -147,14 +147,13 @@ class HabitsPage extends ConsumerWidget {
                     ),
                   );
                 }
-                // Jika ada data, tampilkan dalam bentuk daftar sliver
                 return SliverPadding(
                   padding: const EdgeInsets.fromLTRB(
                     16,
                     10,
                     16,
                     80,
-                  ), // Padding bawah agar tidak tertutup FAB
+                  ), 
                   sliver: SliverList.builder(
                     itemCount: habits.length,
                     itemBuilder: (context, index) {
