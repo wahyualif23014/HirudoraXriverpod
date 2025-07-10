@@ -223,7 +223,7 @@ class HabitsPage extends ConsumerWidget {
     );
   }
 
-  // Widget untuk Kartu Ringkasan Harian (liquid glass)
+  // Widget untuk Kartu Ringkasan Harian 
   Widget _buildDailySummaryCard(
     BuildContext context,
     Map<String, int> summary,
