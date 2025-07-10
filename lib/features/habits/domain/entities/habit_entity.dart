@@ -66,8 +66,6 @@ class HabitEntity extends Equatable {
     );
   }
 }
-
-// HabitCompletionEntity tetap sama
 class HabitCompletionEntity extends Equatable {
   final String id;
   final String habitId;
