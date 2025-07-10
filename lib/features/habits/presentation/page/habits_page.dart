@@ -14,7 +14,6 @@ import '../../../../app/themes/app_theme.dart';
 class HabitsPage extends ConsumerWidget {
   const HabitsPage({super.key});
 
-  // Dialog konfirmasi hapus, tidak ada perubahan
   Future<bool> _showConfirmDeleteDialog(BuildContext context) async {
     return await showDialog(
           context: context,
@@ -119,7 +118,7 @@ class HabitsPage extends ConsumerWidget {
               ),
             ),
 
-            // --- Judul "Daftar Kebiasaan" ---
+            // "Daftar Kebiasaan"
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
