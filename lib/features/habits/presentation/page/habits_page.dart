@@ -143,7 +143,7 @@ class HabitsPage extends ConsumerWidget {
                       padding: const EdgeInsets.all(16.0),
                       child: _buildEmptyState(
                         context,
-                      ), // Tampilan saat tidak ada data
+                      ), 
                     ),
                   );
                 }
