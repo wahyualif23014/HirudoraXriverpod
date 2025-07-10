@@ -100,7 +100,7 @@ class HabitsPage extends ConsumerWidget {
                 titlePadding: const EdgeInsets.only(
                   left: 60,
                   bottom: 16,
-                ), // Sesuaikan padding judul
+                ), 
                 title: Text(
                   'The Habitts',
                   style: AppTextStyles.titleLarge.copyWith(
