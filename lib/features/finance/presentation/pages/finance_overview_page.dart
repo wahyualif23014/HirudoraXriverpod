@@ -347,7 +347,6 @@ class _TransactionListItem extends ConsumerWidget {
     final amountColor = isExpense ? AppColors.error : AppColors.accentGreen;
     final iconData =
         isExpense ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;
-    // Anda bisa tambahkan lagi logika untuk budget provider di sini jika perlu
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
