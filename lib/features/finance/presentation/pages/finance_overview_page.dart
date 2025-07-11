@@ -352,7 +352,6 @@ class _TransactionListItem extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Slidable(
         key: ValueKey(transaction.id),
-        // --- Perubahan Utama: Aksi Geser Kaca ---
         startActionPane: ActionPane(
           motion: const StretchMotion(),
           extentRatio: 0.25,
