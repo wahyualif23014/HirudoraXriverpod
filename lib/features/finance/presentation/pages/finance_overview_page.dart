@@ -453,7 +453,6 @@ class _TransactionListItem extends ConsumerWidget {
   }
 }
 
-// WIDGET BARU: Aksi Geser Kaca yang Dapat Digunakan Kembali
 class _GlassSlidableAction extends StatelessWidget {
   final Color color;
   final IconData icon;
