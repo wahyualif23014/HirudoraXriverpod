@@ -84,7 +84,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ActivitiesPage(),
         routes: [
           GoRoute(
-            path: 'add', // /activities/add
+            path: 'add',
             name: AppRoutes.addActivityPath,
             builder: (context, state) {
               // Ambil data 'extra' yang mungkin dikirim
