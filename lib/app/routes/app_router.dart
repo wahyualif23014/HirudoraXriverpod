@@ -89,7 +89,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               final ActivityEntity? editingActivity =
                   state.extra as ActivityEntity?;
-              // Kirim ke AddActivityPage
               return AddActivityPage(editingActivity: editingActivity);
             },
           ),
