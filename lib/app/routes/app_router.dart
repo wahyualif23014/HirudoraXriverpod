@@ -80,7 +80,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // --- Activities Feature Routes ---
       GoRoute(
         path: '/activities',
-        name: AppRoutes.activitiesHubPath, // Beri nama untuk praktik terbaik
+        name: AppRoutes.activitiesHubPath, 
         builder: (context, state) => const ActivitiesPage(),
         routes: [
           GoRoute(
