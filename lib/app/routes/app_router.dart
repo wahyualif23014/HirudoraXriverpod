@@ -48,7 +48,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AppRoutes.homePath,
 
-    // redirect: (BuildContext context, GoRouterState state) { /* ... */ },
     routes: <GoRoute>[
       // --- Main Application Routes ---
       GoRoute(
