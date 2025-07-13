@@ -87,7 +87,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: 'add',
             name: AppRoutes.addActivityPath,
             builder: (context, state) {
-              // Ambil data 'extra' yang mungkin dikirim
               final ActivityEntity? editingActivity =
                   state.extra as ActivityEntity?;
               // Kirim ke AddActivityPage
