@@ -61,7 +61,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const FinanceOverviewPage(),
         routes: [
           GoRoute(
-            path: 'add-transaction', // Nested: /finance/add-transaction
+            path: 'add-transaction', 
             builder: (context, state) => const AddTransactionPage(),
           ),
           GoRoute(
