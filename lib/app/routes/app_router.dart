@@ -104,9 +104,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // --- Habits Feature Routes (DI-UNCOMMENT SELURUH BLOK INI) ---
       GoRoute(
-        path: AppRoutes.habitsHubPath, // Path: /habits
+        path: AppRoutes.habitsHubPath, 
         builder: (context, state) => const HabitsPage(),
         routes: [
           GoRoute(
