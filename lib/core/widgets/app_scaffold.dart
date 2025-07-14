@@ -25,7 +25,7 @@ class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true, // Agar body bisa di belakang AppBar
+      extendBodyBehindAppBar: true, 
       appBar: title != null
           ? AppBar(
               title: Text(title!),
