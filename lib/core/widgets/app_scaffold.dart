@@ -31,8 +31,6 @@ class AppScaffold extends StatelessWidget {
               title: Text(title!),
               actions: actions,
               leading: leading,
-              // Background AppBar akan secara otomatis transparan karena elevation 0
-              // Kita bisa menambahkan GlassContainer di FlexibleSpace jika mau
             )
           : null,
       body: Container(
