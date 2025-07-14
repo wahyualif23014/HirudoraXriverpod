@@ -94,8 +94,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
           // --- TAMBAHKAN BLOK INI ---
           GoRoute(
-            path: ':id', // Nested: /activities/:id
-            name: 'activityDetail', // Beri nama untuk praktik terbaik
+            path: ':id', 
+            name: 'activityDetail', 
             builder: (context, state) {
               final activityId = state.pathParameters['id']!;
               return ActivityDetailPage(activityId: activityId);
