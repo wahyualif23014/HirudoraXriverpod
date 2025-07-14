@@ -110,14 +110,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const HabitsPage(),
         routes: [
           GoRoute(
-            path: 'add', // Nested: /habits/add
+            path: 'add',
             builder: (context, state) {
               final HabitEntity? editingHabit = state.extra as HabitEntity?;
               return AddHabitPage(editingHabit: editingHabit);
             },
           ),
           GoRoute(
-            path: ':id', // Nested: /habits/:id
+            path: ':id', 
             name: 'habitDetail',
             builder: (context, state) {
               final habitId = state.pathParameters['id']!;
