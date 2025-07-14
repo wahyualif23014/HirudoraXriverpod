@@ -129,16 +129,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // --- Goals Feature Routes (Ini sudah OK) ---
       GoRoute(
-        path: AppRoutes.goalsHubPath, // Hub utama Goals
+        path: AppRoutes.goalsHubPath, 
         builder: (context, state) => const Text('Goals Hub Page (Coming Soon)'),
         routes: [
           GoRoute(
-            path: 'add', // Nested: /goals/add
+            path: 'add', 
             builder:
                 (context, state) => const Text('Add Goal Page (Coming Soon)'),
           ),
           GoRoute(
-            path: ':id', // Nested: /goals/:id
+            path: ':id', 
             builder: (context, state) {
               final goalId = state.pathParameters['id'];
               return Text('Goal Detail Page for ID: $goalId');
