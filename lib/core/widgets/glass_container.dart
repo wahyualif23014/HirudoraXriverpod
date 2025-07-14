@@ -42,7 +42,7 @@ class GlassContainer extends StatelessWidget {
           height: height,
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0), // Warna dasar transparan
+            color: Colors.white.withOpacity(0), 
             gradient: LinearGradient(
               colors: linearGradientColors ?? [
                 AppColors.glassBackgroundStart.withOpacity(opacity),
