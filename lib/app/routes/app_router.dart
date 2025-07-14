@@ -92,7 +92,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               return AddActivityPage(editingActivity: editingActivity);
             },
           ),
-          // --- TAMBAHKAN BLOK INI ---
           GoRoute(
             path: ':id', 
             name: 'activityDetail', 
