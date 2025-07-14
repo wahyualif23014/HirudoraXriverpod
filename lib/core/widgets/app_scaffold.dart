@@ -9,7 +9,7 @@ class AppScaffold extends StatelessWidget {
   final Widget? leading;
   final Widget? floatingActionButton;
   final Widget? bottomNavigationBar;
-  final Color? appBarColor; // Untuk custom color AppBar glassmorphism
+  final Color? appBarColor; 
 
   const AppScaffold(SizedBox sizedBox, {
     super.key,
