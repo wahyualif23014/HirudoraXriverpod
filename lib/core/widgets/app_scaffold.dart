@@ -37,7 +37,7 @@ class AppScaffold extends StatelessWidget {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.primaryBackground, // Warna hitam gelap
+              AppColors.primaryBackground, 
               AppColors.secondaryBackground, // Warna abu-abu gelap
             ],
             begin: Alignment.topLeft,
