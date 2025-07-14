@@ -9,10 +9,6 @@ import 'package:hirudorax/features/habits/domain/entities/habit_entity.dart';
 import 'package:hirudorax/features/habits/presentation/page/add_habit_page.dart';
 import 'package:hirudorax/features/habits/presentation/page/habit_detail_page.dart';
 
-// --- Impor halaman-halaman Anda yang akan digunakan ---
-// PASTIKAN SEMUA IMPOR INI SUDAH BENAR PATH-NYA DAN FILENYA ADA
-// Jika file halaman belum ada, Anda bisa membuatnya dengan StatelessWidget/ConsumerWidget sederhana
-// yang mengembalikan Scaffold dengan Text sebagai placeholder.
 
 // Halaman Dashboard/Home
 import '../../features/home/presentation/pages/dasboard.dart';
