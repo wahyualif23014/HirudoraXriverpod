@@ -38,7 +38,7 @@ class AppScaffold extends StatelessWidget {
           gradient: LinearGradient(
             colors: [
               AppColors.primaryBackground, 
-              AppColors.secondaryBackground, // Warna abu-abu gelap
+              AppColors.secondaryBackground, 
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
