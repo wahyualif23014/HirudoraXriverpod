@@ -30,7 +30,6 @@ class HabitListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch status completion hari ini untuk habit ini
     final isCompletedToday = ref.watch(habitIsCompletedTodayProvider(habit.id));
 
     // Logika untuk menentukan tampilan berdasarkan status completion (tidak berubah)
