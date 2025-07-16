@@ -104,7 +104,6 @@ class HabitListItem extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           child: Row(
             children: [
-              // Tombol Selesai/Batal Selesai
               GestureDetector(
                 onTap: () => onToggleComplete(!isCompletedToday),
                 child: Container(
