@@ -107,7 +107,7 @@ class HabitListItem extends ConsumerWidget {
               GestureDetector(
                 onTap: () => onToggleComplete(!isCompletedToday),
                 child: Container(
-                  color: Colors.transparent, // Membuat area tap lebih besar
+                  color: Colors.transparent, 
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(iconData, color: iconColor, size: 28),
                 ),
