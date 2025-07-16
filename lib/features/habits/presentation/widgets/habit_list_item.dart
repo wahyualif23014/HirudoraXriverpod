@@ -146,7 +146,6 @@ class HabitListItem extends ConsumerWidget {
                 ),
               ),
 
-              // Icon 'Chevron' untuk indikasi bisa di-tap
               const Icon(Icons.chevron_right_rounded, color: AppColors.tertiaryText, size: 24),
             ],
           ),
