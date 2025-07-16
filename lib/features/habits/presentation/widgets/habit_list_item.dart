@@ -38,7 +38,6 @@ class HabitListItem extends ConsumerWidget {
     final nameColor = isCompletedToday ? AppColors.secondaryText : AppColors.primaryText;
     final nameDecoration = isCompletedToday ? TextDecoration.lineThrough : TextDecoration.none;
 
-    // Logika untuk menampilkan teks frekuensi (tidak berubah)
     String frequencyText;
     switch (habit.frequency) {
         case HabitFrequency.daily:
