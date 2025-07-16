@@ -32,7 +32,6 @@ class HabitListItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isCompletedToday = ref.watch(habitIsCompletedTodayProvider(habit.id));
 
-    // Logika untuk menentukan tampilan berdasarkan status completion (tidak berubah)
     final iconData = isCompletedToday ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded;
     final iconColor = isCompletedToday ? AppColors.accentGreen : AppColors.secondaryText;
     final nameColor = isCompletedToday ? AppColors.secondaryText : AppColors.primaryText;
