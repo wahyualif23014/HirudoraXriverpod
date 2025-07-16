@@ -64,7 +64,7 @@ class HabitListItem extends ConsumerWidget {
       // --- AKSI GESER KE KANAN (START) ---
       startActionPane: ActionPane(
         motion: const StretchMotion(),
-        extentRatio: 0.25, // Seberapa lebar area aksi
+        extentRatio: 0.25, 
         children: [
           SlidableAction(
             onPressed: (_) => onEdit(),
