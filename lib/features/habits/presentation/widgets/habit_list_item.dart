@@ -97,7 +97,7 @@ class HabitListItem extends ConsumerWidget {
 
       // --- KONTEN UTAMA DENGAN EFEK KACA ---
       child: InkWell(
-        onTap: onTap, // Gunakan callback onTap dari constructor
+        onTap: onTap,
         borderRadius: BorderRadius.circular(15),
         child: GlassContainer(
           borderRadius: 15,
