@@ -17,7 +17,7 @@ class HabitListItem extends ConsumerWidget {
   final ValueChanged<bool> onToggleComplete;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
-  final VoidCallback onTap; // Callback untuk navigasi
+  final VoidCallback onTap; 
 
   const HabitListItem({
     super.key,
