@@ -103,8 +103,6 @@ class AppTheme {
   );
 }
 
-// lib/app/theme/text_styles.dart (Buat file ini jika belum ada)
-// Ini adalah placeholder. Anda bisa mendefinisikan gaya teks kustom di sini.
 class AppTextStyles {
   static const TextStyle displayLarge = TextStyle(fontSize: 57, fontWeight: FontWeight.normal);
   static const TextStyle displayMedium = TextStyle(fontSize: 45, fontWeight: FontWeight.normal);
