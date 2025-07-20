@@ -1,17 +1,17 @@
 // lib/app/theme/app_theme.dart
 import 'package:flutter/material.dart';
-import '../themes/colors.dart'; // Impor warna baru Anda
+import '../themes/colors.dart'; 
 
 class AppTheme {
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.dark, 
     primaryColor: AppColors.accentBlue, 
     scaffoldBackgroundColor: AppColors.primaryBackground, 
-    cardColor: AppColors.secondaryBackground, // Warna card default
+    cardColor: AppColors.secondaryBackground, 
 
     // Konfigurasi AppBar
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent, // Transparan agar background scaffold terlihat
+      backgroundColor: Colors.transparent, 
       elevation: 0,
       foregroundColor: AppColors.primaryText,
       centerTitle: true,
