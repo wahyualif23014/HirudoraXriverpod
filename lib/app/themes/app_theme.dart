@@ -44,7 +44,7 @@ class AppTheme {
     // Konfigurasi Button
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.accentBlue, // Warna tombol utama
+        backgroundColor: AppColors.accentBlue, 
         foregroundColor: AppColors.primaryText,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -88,7 +88,7 @@ class AppTheme {
 
     // Konfigurasi BottomSheet
     bottomSheetTheme: BottomSheetThemeData(
-      backgroundColor: AppColors.secondaryBackground, // Background sheet
+      backgroundColor: AppColors.secondaryBackground,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
