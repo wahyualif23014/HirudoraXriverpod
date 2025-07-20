@@ -4,9 +4,9 @@ import '../themes/colors.dart'; // Impor warna baru Anda
 
 class AppTheme {
   static ThemeData lightTheme = ThemeData(
-    brightness: Brightness.dark, // Menggunakan tema gelap sebagai dasar
-    primaryColor: AppColors.accentBlue, // Warna utama aplikasi
-    scaffoldBackgroundColor: AppColors.primaryBackground, // Background scaffold utama
+    brightness: Brightness.dark, 
+    primaryColor: AppColors.accentBlue, 
+    scaffoldBackgroundColor: AppColors.primaryBackground, 
     cardColor: AppColors.secondaryBackground, // Warna card default
 
     // Konfigurasi AppBar
