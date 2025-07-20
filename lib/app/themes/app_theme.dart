@@ -102,7 +102,7 @@ class AppTheme {
     ),
   );
 }
-
+// ini untuk teks yang digunakan di seluruh aplikasi
 class AppTextStyles {
   static const TextStyle displayLarge = TextStyle(fontSize: 57, fontWeight: FontWeight.normal);
   static const TextStyle displayMedium = TextStyle(fontSize: 45, fontWeight: FontWeight.normal);
